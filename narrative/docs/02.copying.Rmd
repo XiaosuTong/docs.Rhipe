@@ -1,0 +1,110 @@
+## Copying the Data ##
+
+### Dataset Information ###
+
+For the rest of documentation, we are going to demonstrate how to use `RHIPE` to analyze a large and
+complex data from real life. 
+
+#### Source ####
+
+The data is a compendium of different levels of weather data ranging from stations taking regular 
+hourly measurements, such as those at airports, to cooperative observer stations where the records 
+may only include daily values, have gaps in time or might not measure both temperature and precipitation. 
+The original source for the data are the data archives at the 
+[National Climatic Data Center](http://www.ncdc.noaa.gov) although these data have been further 
+processed to combine stations at similar locations and eliminate stations with short records. 
+
+#### Discription ####
+
+The data set we are going to download is about observed monthly total precipitation and monthly 
+average minimum and maximum daily temperatures for the coterminous US 1895-1997. Totally, there are 
+12,392 stations all over the nation, 8,125 stations for temperature, 11,918 stations for precipitation.
+For each station, an unique ID, station name, elevation, longitude, and altitude are available. If a 
+measurement of a specific station at a specific month is treated as one observation, then there are 
+6,204,442 observations for precipitation and 4,285,841 observations for temperature. 
+
+### Copying the Data to HDFS ###
+
+The Climate data can be downloaded at [This site](http://www.image.ucar.edu/GSP/Data/US.monthly.met/).
+We are going to download the `tar` files and unzip them under the current working directory in R.
+```{r eval=FALSE, tidy=FALSE}
+for(x in c("t", "p")) {
+  #t for temperature, and p for precipitation
+  address <- sprintf("http://www.image.ucar.edu/pub/nychka/NCAR_%sinfill_others.tar", x)
+  system(sprintf("wget %s ./", address))
+  system(sprintf("tar -xvf NCAR_%sinfill_others.tar", x))
+}
+```
+Two folders are locating in your working directory now, and within each folder, there are 'METAinfo',
+'README', and 'tmax.complete.Ynnn', 'tmin.complete.Ynnn' in temperature, and 'ppt.complete.Ynnn' 
+in precipitation, where nnn = 001, 002, ..., 103.
+
+Next thing would be copying all those data files to HDFS. As long as a file wants to be the input 
+of a mapreduce job, it has to be located on HDFS. The `RHIPE` function that can help us to achieve
+this goal is `rhput()`. As we've already seen previously, the first two arguments in `rhput()` are
+the path of the local file to be copied to the HDFS which are `NCAR_pinfill/` or `NCAR_tinfill/`
+under the current working directory, and path on HDFS which the file will be copied to. Here the 
+path on HDFS is under `/tmp/climate/`. 
+
+```{r eval=FALSE, tidy=FALSE}
+for(x in formatC(1:103, width = 3, flag = "0")) {
+  rhput(paste("./NCAR_pinfill/ppt.complete.Y", x, sep = ""), 
+        paste("/tmp/climate/NCAR_pinfill/ppt.complete.Y", x, sep = "")
+  )
+}
+for(x in formatC(1:103, width = 3, flag = "0")) {
+  rhput(paste("./NCAR_tinfill/tmax.complete.Y", x, sep = ""), 
+        paste("/tmp/climate/NCAR_tinfill/tmax/tmax.complete.Y", x, sep = "")
+  )
+  rhput(paste("./NCAR_tinfill/tmin.complete.Y", x, sep = ""), 
+        paste("/tmp/climate/NCAR_tinfill/tmin/tmin.complete.Y", x, sep="")
+  )
+}
+rhls("/tmp/climate/NCAR_pinfill")
+```
+```
+    permission owner      group     size          modtime                                        file
+1   -rw-r--r-- tongx supergroup   966 kb 2014-06-25 17:17 /tmp/climate/NCAR_pinfill/ppt.complete.Y001
+2   -rw-r--r-- tongx supergroup   966 kb 2014-06-25 17:17 /tmp/climate/NCAR_pinfill/ppt.complete.Y002
+3   -rw-r--r-- tongx supergroup   966 kb 2014-06-25 17:17 /tmp/climate/NCAR_pinfill/ppt.complete.Y003
+4   -rw-r--r-- tongx supergroup   966 kb 2014-06-25 17:16 /tmp/climate/NCAR_pinfill/ppt.complete.Y004
+...
+99  -rw-r--r-- tongx supergroup   966 kb 2014-06-25 17:17 /tmp/climate/NCAR_pinfill/ppt.complete.Y099
+100 -rw-r--r-- tongx supergroup   966 kb 2014-06-25 17:17 /tmp/climate/NCAR_pinfill/ppt.complete.Y100
+101 -rw-r--r-- tongx supergroup   966 kb 2014-06-25 17:17 /tmp/climate/NCAR_pinfill/ppt.complete.Y101
+102 -rw-r--r-- tongx supergroup   966 kb 2014-06-25 17:17 /tmp/climate/NCAR_pinfill/ppt.complete.Y102
+103 -rw-r--r-- tongx supergroup   966 kb 2014-06-25 17:17 /tmp/climate/NCAR_pinfill/ppt.complete.Y103
+```
+
+By calling the `rhls()` function, we are able to see all files and sub-directories under one 
+specific directory on HDFS. The output of `rhls()` is a data frame object in R with six columns
+which are `permission`, `owner`, `group`, `size`, `modtime`, and `file`. All those information
+about a file on HDFS are very similar to the local file system.
+
+Two 'METAinfo' files records the station.id, elevation, latitude, and longitude information for each
+stations. We will read in this text file into R, and create two R objects which contain all station
+information. The reason that we are considering to do this is that we want every single task of our
+mapreduce job can access this R object, which means we have to save this R object into HDFS. If we 
+want to save an R object as `.RData` into HDFS, instead of `rhput()`, `rhsave()` function should be 
+used. It is very similar to the R base function `save()`, the only difference is in `file` argument, 
+we specify the absolute path to file on HDFS, not local file system path.
+
+```{r eval=FALSE, tidy=FALSE}
+UStinfo <- scan("./NCAR_tinfill/METAinfo", skip = 1, what = list( "a", 1, 1, 1))
+names(UStinfo) <- c("station.id", "elev", "lon", "lat")
+USpinfo <- scan("./NCAR_pinfill/METAinfo", skip = 1, what = list( "a", 1, 1, 1))
+names(USpinfo) <- c("station.id", "elev", "lon", "lat")
+rhsave(list = ("UStinfo"), file = "/tmp/climate/UStinfo.RData")
+rhsave(list = ("USpinfo"), file = "/tmp/climate/USpinfo.RData")
+rhls("/tmp/climate")
+```
+```
+  permission owner      group     size          modtime                       file
+1 drwxr-xr-x tongx supergroup        0 2014-06-27 22:11  /tmp/climate/NCAR_pinfill
+2 drwxrwxrwx tongx supergroup        0 2014-06-25 17:34  /tmp/climate/NCAR_tinfill
+3 -rw-r--r-- tongx supergroup 111.4 kb 2014-06-26 21:52 /tmp/climate/USpinfo.RData
+4 -rw-r--r-- tongx supergroup 79.61 kb 2014-06-26 21:52 /tmp/climate/UStinfo.RData
+```
+
+`UStinfo` and `USpinfo` are two list objects, each has four elements which are station.id, elevation,
+latitude, and longitude respectively. Two `.RData` have been saved into HDFS for later use.

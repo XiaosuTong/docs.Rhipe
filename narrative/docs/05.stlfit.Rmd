@@ -1,0 +1,141 @@
+## STL+ Fitting ##
+
+### Modeling and Diagnostics ###
+
+Seasonal-Trend decomposition procedure based on Loess (STL)[Cleveland et al, 1990] is a decomposition
+method for time series data analysis. Each observation in the time series is decomposed into three 
+parts: the trend component, the seasonal component, and the remainder component. The long term change
+in the time series is captured by the trend component. A cyclical pattern is reflected in the seasonal
+component. The residuals, the remaining variation, are the remainder component.
+
+STL+ is an advanced version of original STL procedure, which is introduced by Ryan Hafen. STL+ added 
+several new feature such as capability to handle missing value, local quadratic fitting for trend 
+and seasonal components, and adding multiple frequency components, and so forth. In R the package 
+for STL+ is called `stl2` which can be installed as following:
+
+```{r eval=FALSE, tidy=FALSE}
+library(devtools)
+install_github("stl2", "hafen")
+```
+
+#### Experiment 1 ####
+
+The first STL+ model we are going to build is setting parameters as following:
+`t.window`= 495, `t.degree`= 2, `s.window`= 77, `s.degree`= 1, `inner`= 10, `outer`= 0. So we plan 
+to get local linear fit for the seasonal component and local quadratic fit for the trend component.
+The fitting span for trend component is about 40% of all observations, and span for seasonal component
+is about 75% of all yearly cycles.
+
+```{r eval=FALSE, tidy=FALSE}
+map <- expression({
+  lapply(seq_along(map.values), function(r) {
+    tmp <- map.values[[r]]
+    month <- c("Jan","Feb","Mar","Apr","May","June","July","Aug", "Sep", "Oct", "Nov", "Dec")
+    tmp$month <- factor(tmp$month, levels = month)
+    tmp <- tmp[order(tmp$year, tmp$month),]
+    tmp$factor <- factor(
+      rep(rep(paste("Period", 1:9), c(rep(144,8),84))), 
+      levels=paste("Period", c(9:1))
+    )
+    tmp$time <- c(1:1236)
+    tmp$time2 <- c(rep(0:143,8), 0:83)
+    ylab <- "Maximum Temperature (degrees centigrade)"
+    stl.fit <- stl2(
+      x = tmp$tmax, 
+      t = tmp$time, 
+      n.p = 12, 
+      s.window = 77, 
+      s.degree = 1, 
+      t.window = 495, 
+      t.degree = 2, 
+      inner = 10, 
+      outer = 0
+    )$data
+    stl.fit <- cbind(tmp, stl.fit)
+    trellis.device(postscript, 
+      file  = paste("./tmp/stl.1.strend+seasonal", map.keys[[r]], "ps", sep = "."), 
+      color = TRUE, 
+      paper = "legal"
+    )  
+    b <- xyplot( raw ~ time2 | factor,
+      data = stl.fit,
+      xlab = list(label = "Month", cex = 1.2),
+      ylab = list(label = ylab, cex = 1.2),
+      main = list(label = paste("Station", map.keys[[r]], sep = " "), cex = 1.5),
+      layout = c(1,9),
+			aspect= 0.06,
+			strip = FALSE,
+      xlim = c(0, 143),
+      scales = list(
+        y = list(relation = 'same', tick.number = 4, alternating = TRUE), 
+        x = list(at = seq(0, 143, by = 12), relation = 'same')
+      ),
+      panel = function(x, y, subscripts,...) {
+        panel.abline(v = seq(0,145, by = 12), color = "lightgrey", lty = 3, lwd = 0.5)
+        panel.xyplot(
+          x = x, 
+          y = y, 
+          type = "p", 
+          col = "#0080ff", 
+          pch = 16, 
+          cex = 0.5, ...
+        )
+        panel.xyplot(
+          x = stl.fit[subscripts,]$time2, 
+          y = (stl.fit[subscripts,]$trend+stl.fit[subscripts,]$seasonal), 
+          type = "l", 
+          col = "#ff00ff", 
+          lwd=1, ...
+        )            
+      }
+    )
+    print(b)
+    dev.off()
+  })
+})
+z <- rhwatch(
+  map       = map,
+  input     = "/tmp/climate/output/tmax.bystation.10",
+  output    = "/tmp/climate/output/graph/stl.1.trend+seasonal",
+  setup = expression(
+    map = {
+      library(lattice)
+      library(yaImpute, lib.loc = lib.loc)
+      library(stl2, lib.loc = lib.loc)
+    }
+  ),
+  mapred    = list( 
+    mapred.reduce.tasks = 0, 
+    mapred.task.timeout = 0
+  ),
+  copyFiles = TRUE,
+  readback  = FALSE,
+)
+```
+
+Then we can copy the files from HDFS to local file system by using `rhget` function in RHIPE.
+
+```{r eval=FALSE, tidy=FALSE}
+rhget("/tmp/climate/output/graph/stl.1.trend+seasonal/_outputs/stl.1.strend+seasonal.030936.ps", "~/")
+```
+
+In the time series plot, the trend component plus seasonal component of maximum temperature is 
+plotting against month index. The whole time series is chunked into 9 periods. Each of the first
+8 periods has 144 monthly observations, the last period has 84 monthly observations. The raw 
+observations are drawn with blue points, and the seasonal component plus trend component was 
+drawn with purple curve.
+
+![Trend and seasonal](./plots/stl.1.strend+seasonal.030936.png)
+
+
+#### Experiment 2 ####
+
+The second STL+ model is setting parameters as following:
+`t.window`= 617, `t.degree`= 2, `s.window`= 103, `s.degree`= 1, `inner`= 10, `outer`= 0. So we plan 
+to get local linear fit for the seasonal component and local quadratic fit for the trend component.
+The fitting span for trend component is about 40% of all observations, and span for seasonal component
+is about 75% of all yearly cycles.
+
+### Tunning Parameter ###
+
+

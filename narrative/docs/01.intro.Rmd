@@ -1,0 +1,97 @@
+# RHIPE: Narrative Climate #
+
+## Introduction ##
+
+### Background ###
+
+This narrative documentation covers an implementation of Divide and Recombine (D&R) in the R and 
+Hadoop Integrated Programming Environment, called `RHIPE`.
+
+The goal of D&R is to provide an environment for data analysts to carry out deep statistical analysis
+of large, complex data with as much ease and flexibility as is possible with small datasets.
+
+D&R is accomplished by dividing data into meaningful subsets, applying analytical methods to those 
+subsets, and recombining the results. Recombinations can be numerical or visual. 
+
+The diagram below is a visual representation of the D&R process.
+![Alt text](./plots/drdiagram.svg)
+The raw data is stored in some arbitrary structure. We apply a division method to it to obtain a 
+meaningful partitioning. Then we attack this partitioning with several visual and numerical 
+recombination methods, where we apply the method independently to each subset and combine the results.
+There are many forms of divisions and recombinations, many of which will be covered in this tutorial.
+
+A clearer picture of how D&R works should be reached by reading and trying out the examples in the 
+documentation. It is also recommended to read the references below.
+
+#### Outline ####
+
+- First, we 
+- Next, we 
+- Then, we 
+- We also provide R source files for all of the examples throughout the documentation.
+
+#### Reference ####
+
+- [datadr.org](http://datadr.org): Divide and Recombine (D&R) with `RHIPE`
+- [RHIPE](http://github.com/saptarshiguha/RHIPE): the engine that makes D&R work for large datasets
+- [datadr](http://github.com/hafen/datadr): R package providing the D&R framework
+- [trelliscope](http://github.com/hafen/trelliscope): the visualization companion to `datadr`
+- [Large complex data: divide and recombine (D&R) with RHIPE. *Stat*, 1(1), 53-67]
+(http://onlinelibrary.wiley.com/doi/10.1002/sta4.7/full)
+
+### Getting Started ###
+
+The goal of this documentation is to provide useful examples of how to use RHIPE as a supplement to
+the introductory tutorials provided [here](http://xiaosutong.github.io/docs-RHIPE/tutorial/), which 
+focus more on illustrating functionality than doing something useful with data.
+
+#### RHIPE ####
+
+`RHIPE` is the R and Hadoop Integrated Programming Environment. It provides a way to execute Hadoop 
+MapReduce jobs completely from within R and with R data structures.
+
+To install and use `RHIPE`, the following are required:
+
+1. A cluster of machines (a single node can be used but it pointless outside of testing) -- these 
+machines can be commodity workstations
+2. Hadoop installed and configured on the cluster
+3. `RHIPE` and its dependencies (protocol buffers) installed on all the nodes
+
+(1) is often a large barrier to entry. (2) can require a lot of patience and know-how. (3) isn't too
+difficult.
+
+These requirements are generally enough of a hinderance that only people very serious about scalable
+data analysis have the perseverance to get a system running. Unfortunately, this is currently the 
+price to pay for scalability. We are working on providing easier access and better documentation for
+getting set up with this computing platform.
+
+#### Loading ####
+After all set up and installation has been done, We can load the package:
+```{r eval=FALSE, tidy=FALSE}
+library(Rhipe)
+```
+```
+Loading required package: codetools
+Loading required package: rJava
+Loading required package: testthat
+------------------------------------------------
+| Please call rhinit() else RHIPE will not run |
+------------------------------------------------
+```
+Before any `RHIPE` code, we have to initialize the package by using:
+```{r eval=FALSE,tidy=FALSE}
+rhinit()
+```
+```
+Rhipe: Using Rhipe.jar file
+Initializing Rhipe v0.74.0
+Initializing mapfile caches
+```
+`rhinit()` function is trying to initialize the `RHIPE` subsystem. The objective of `RHIPE` is to let 
+the user focus on thinking about the data. The difficulties in distributing computations and 
+storing data across a cluster are automatically handled by `RHIPE` and Hadoop. So in `rhinit()`
+not only the configuration of `Java` and `Hadoop`, but also `RHIPE` options have been set up. We
+will illustrate more details about those in later sections. As a user, all default configuration
+of `rhinit()` will be enough, and no more argument is necessary for this moment.
+
+And now we are ready to go.

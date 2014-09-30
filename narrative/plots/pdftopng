@@ -1,0 +1,6 @@
+#!/bin/sh
+for pdffile in `ls -1 *pdf`
+do
+convert -density 300 $pdffile image.png
+done
+

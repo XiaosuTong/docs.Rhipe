@@ -1,0 +1,5 @@
+#!/bin/sh
+for psfile in `ls -1 *ps`
+do
+ps2pdf -sPAPERSIZE=legal -dOptimize=true -dEmbedAllFonts=true $psfile
+done

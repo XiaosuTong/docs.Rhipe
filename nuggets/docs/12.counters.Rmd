@@ -1,0 +1,176 @@
+## Using a Counter ##
+
+### Function rhcounter() ###
+
+The function `rhcounter()` is a very useful function that can help us with collecting information during the mapreduce job. There is sometimes 
+that when we are collecting key/value pairs, we would also like to count the frequnce of specific key/value pairs that we are interested in. 
+`rhcounter(group, name, value)` increments the distributed counter name that belongs to family `group` by `value`. Ideally `group` and `name` 
+should be strings, any R object can be sent and it will be converted to its string representation. The next thing that we should be concerned 
+with is how to access this counter we defined in a mapreduce job. At the jobtracker webpage, there will be a counter table in job summary page
+of each mapreduce job. There is two types of counters can be found in the table, one is default counters. Mapreduce job itself has some default 
+job counters, filesystem counters and so forth. Those counters is defined by Hadoop. Another type of counters is user defined. The first column
+of the table is the `group`, second column is `name`, and the rest of columns are the frequence counts in map step, reduce step, and total
+respectively.
+
+### Airline Data: Download Status ###
+
+When we download the airline data, we can add two counters to assist us in chekcing the downloading status. We just add two more lines in the map
+expression we used to have for downloading code:
+
+```{r eval=FALSE, tidy=FALSE}
+map <- expression({
+  msys <- function(on){
+    system(sprintf("wget  %s --directory-prefix ./tmp 2> ./errors", on))
+    if(length(grep("(failed)|(unable)", readLines("./errors"))) > 0){
+      stop(paste(readLines("./errors"), collapse="\n"))
+    }
+  }
+  lapply(map.values, function(r){
+    x = 1986 + r
+    on <- sprintf("http://stat-computing.org/dataexpo/2009/%s.csv.bz2", x)
+    fn <- sprintf("./tmp/%s.csv.bz2",x)
+    msys(on)
+    system(sprintf('bunzip2 %s', fn))
+    rhcounter("FILES", x, 1)
+    rhcounter("FILES", "_ALL_", 1)
+  })
+})
+```
+
+For each downloading job, we create a counter, belongs to "FILES" group, with name same as the corresponding year value. And also, we create a overall
+cumulative counter which counts the total number of downloading files, which also belongs to "FILES" group, with the name "_ALL_". So we are going to 
+have 10 individual counters with count 1 for each, and one total counter with value equal to 10.
+
+### Airline Data: Delay Rate ###
+
+In the Airline data, we have given an example of calculating the delay rate on every day in the dataset. Within this example, we read in blocks
+of data and output sequence file with keys are date of a day, values are total number of flights and number of delayed fights. You may have noticed
+the first key/value pair has `NA`s as the key, and two zero as the value. 
+```{r eval=FALSE, tidy=FALSE}
+b <- rhread("/tmp/airline/output/delaybyday")
+head(b, 3)
+```
+```
+[[1]]
+[[1]][[1]]
+[1] NA NA NA
+
+[[1]][[2]]
+[1] 0 0
+
+
+[[2]]
+[[2]][[1]]
+[1] "1987" "10"   "1"   
+
+[[2]][[2]]
+[1] 14759  9067
+
+
+[[3]]
+[[3]][[1]]
+[1] "1987" "10"   "2"   
+
+[[3]][[2]]
+[1] 14740  8978
+```
+
+The reason for appearance of `NA` key/value pairs is that we used `split()` function. If there is no flight information for a day, `split()` will still create
+an element which is an empty data frame, with the name as `NA`, in the result list. Previously we remove the `NA` key from the final data frame `results` read
+from HDFS to local, but here we are planning to remove the key/value pairs with `NA` before they are saved to HDFS, and collect the rest of key/value pairs as 
+usual. At the same time, we also would like to keep recording the number of key/value pairs with `NA`. This can be done as following:
+ 
+```{r eval=FALSE, tidy=FALSE}
+map <- expression({
+  a <- do.call("rbind", map.values)
+  a$delay.sec <- as.vector(a[, 'arrive']) - as.vector(a[, 'sarrive'])
+  a <- a[!is.na(a$delay.sec), ]
+  a$isdelayed <- sapply(a$delay.sec, function(r) if(r > 0) TRUE else FALSE)
+  e <- split(a, list(a$year, a$month, a$day))
+  lapply(e,function(r){
+    n <- nrow(r)
+    numdelayed <- sum(r$isdelayed)
+    if (n == 0) {
+      rhcounter("SPLITS", "EMPTY", 1)
+    }
+    else {
+      rhcollect(c(unique(r$year), unique(r$month), unique(r$day)), c(n, numdelayed))
+    }
+  })
+})
+reduce <- expression(
+  pre = {
+    sums <- c(0, 0)
+  },
+  reduce = {
+    sums <- sums + apply(do.call("rbind", reduce.values), 2, sum)
+  },
+  post = { 
+    rhcollect(reduce.key, sums) 
+  }
+)
+mapred <- list()
+mapred$rhipe_map_buff_size <- 5
+z <- rhwatch(
+  map      = map,
+  reduce   = reduce,
+  combiner = TRUE,
+  input    = rhfmt("/tmp/airline/output/blocks", type = "sequence"),
+  output   = rhfmt("/tmp/airline/output/delaybyday", type = "sequence"),
+  mapred   = mapred,
+  readback = FALSE
+)
+```
+
+For `reduce` expression and `rhwatch()`, we do not change anything to keep it the same as the previous. On jobtracker webpage, we can find that besides 
+all system counters, there is an counter named `EMPTY` belongs to group `SPLITS` which has 707 in map step. So now we know there are 707 days are not 
+included in our final output.
+
+|                  | Counter             | Map       | Reduce    | Total       |
+| -----------------| --------------------|----------:|----------:|------------:|
+| SPLITS           | EMPTY               | 707       | 0         | 707         | 
+| Job Counters     | SLOTS_MILLIS_MAPS   | 0         | 0         | 1,812,399   |
+| ...              |...                  |...        |...        | ...         |
+
+Of course we can have multiple counters within same group we defined. For every flight, we defined delay second to be the difference between arriving time
+and schedule arriving time. There will be three different situations after taking this difference, positive and zero delay second means delayed flight, 
+neigative delay second means arriving in advance, and 'NA' means one of arriving time is missing and so delay second will be `NA` consequently. Now we 
+define a flight is delayed only if the delay second is greater or equal to 15 mins. At the same time, we do want to keep the record about how many flights
+are arriving in advance, how many are arriving right on time, and how many are delayed less than 15 mins. `rhcounter()` will be a good helper for this task.
+
+```{r eval=FALSE,tidy=FALSE}
+map <- expression({
+  a <- do.call("rbind", map.values)
+  a$delay.sec <- as.vector(a[, 'arrive']) - as.vector(a[, 'sarrive'])
+  rhcounter("DELAY", "NA", sum(is.na(a$delay.sec)))
+  a <- a[!is.na(a$delay.sec), ]
+  a$isdelayed <- sapply(a$delay.sec, function(r) if(r > 900) TRUE else FALSE)
+  rhcounter("DELAY", "ADVANCE", sum(sapply(a$delay.sec, function(r) if(r < 0) TRUE else FALSE)))
+  rhcounter("DELAY", "ONTIME", sum(sapply(a$delay.sec, function(r) if(r == 0) TRUE else FALSE)))
+  rhcounter("DELAY", "LESS",  sum(sapply(a$delay.sec, function(r) if(r < 900 & r > 0) TRUE else FALSE)))
+  e <- split(a, list(a$year, a$month, a$day))
+  lapply(e,function(r){
+    n <- nrow(r)
+    numdelayed <- sum(r$isdelayed)
+    if (n == 0) {
+      rhcounter("SPLITS", "EMPTY", 1)
+    }
+    else {
+      rhcollect(c(unique(r$year), unique(r$month), unique(r$day)), c(n, numdelayed))
+    }
+  })
+})
+```
+|                  | Counter             | Map        | Reduce    | Total       |
+| -----------------| --------------------|-----------:|----------:|------------:|
+| DELAY            | ADVANCE             | 21,040,562 | 0         | 21,040,562  |
+|                  | ONTIME              | 2,535,977  | 0         | 2,535,977   |
+|                  | NA                  | 15,407     | 0         | 15,407      |
+|                  | LESS                | 15,326,924 | 0         | 15,326,924  |
+| SPLITS           | EMPTY               | 707        | 0         | 707         | 
+| Job Counters     | SLOTS_MILLIS_MAPS   | 0          | 0         | 1,812,399   |
+| ...              |...                  |...         |...        | ...         |
+
+
+
+

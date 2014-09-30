@@ -1,0 +1,181 @@
+## Exploration of Data ##
+
+### Time Series of each station ###
+
+Now it is a good time to dig into the visualization of time series plot for each station. For each
+station(for we can say for each subset), we would like to create a time series plot which contains
+1236 monthly observations. In `RHIPE`, we can create multiple files of plot parallelly through 
+multiple tasks. Each task will create one ps file for each station, and then save the plotting
+files on HDFS. For this example, we do not need a reduce function, all job can be done in the map 
+function.
+
+```{r eval=FALSE, tidy=FALSE}
+map <- expression({
+  lapply(seq_along(map.keys), function(r) {
+    tmp <- map.values[[r]]
+    month <- c("Jan","Feb","Mar","Apr","May","June","July","Aug", "Sep", "Oct", "Nov", "Dec")
+    tmp$month <- factor(tmp$month, levels = month)
+    tmp <- tmp[with(tmp, order(year, month)),]
+    tmp$factor <- factor(rep(rep(paste("Period", 1:9), c(rep(144,8),84))), 
+      levels=paste("Period", c(9:1))
+    )
+    tmp$time <- c(rep(0:143,8), 0:83)
+    trellis.device(postscript, 
+      file  = paste("./tmp/tmax.vs.time", map.keys[[r]], "ps", sep="."), 
+      color = TRUE, 
+      paper = "legal"
+    )
+    b <- xyplot( tmax ~ time | factor,
+      data   = tmp,
+      xlab   = list(label = "Month", cex = 1.2),
+      ylab   = list(label = "Maximum Temperature (degrees centigrade)", cex = 1.2),
+      main   = list(label = paste("Station ", map.keys[[r]], sep=""), cex=1.5),
+      type   = "b",
+      pch    = 16,
+      cex    = 0.5,	     
+      layout = c(1,9),
+      strip  = FALSE,
+      aspect = 0.06,
+      xlim   = c(0, 143),
+      scales = list(
+        y = list(relation = 'same', alternating = TRUE), 
+        x = list(at = seq(0, 143, by = 12), relation ='same')
+      ),
+      panel  = function(...) {
+        panel.abline(
+          h     = seq(0,max(tmp$tmax),by=5), 
+          v     = seq(0,145,by=12), 
+          color = "lightgrey", 
+          lty   = 3, 
+          lwd   = 0.5
+        )
+        panel.xyplot(...)
+      }
+    )
+    print(b)
+    dev.off()
+  })
+})
+z <- rhwatch(
+  map       = map,
+  input     = "/tmp/climate/output/tmax.bystation.10",
+  output    = "/tmp/climate/output/graph/tmax.vs.time/",
+  setup = expression(
+    map = {library(lattice)}
+  ),
+  mapred    = list( 
+    mapred.reduce.tasks = 0, 
+    mapred.task.timeout = 0
+  ),
+  copyFiles = TRUE,
+  readback  = FALSE,
+)
+```
+
+In map function, we created a ps file named 'tmax.vs.time' with station id saved under `/tmp/`. 
+Every ps file is created first on corresponding mapper node, then we have to specify the `copyFiles`
+argument in `rhwatch` function to copy the ps files which on different mapper nodes to the HDFS.
+```{r eval=FALSE,tidy=FALSE}
+rhls("/tmp/climate/output/graph/tmax.vs.time")
+```
+```
+   permission owner      group        size          modtime                                                file
+1  -rw-r--r-- tongx supergroup           0 2014-07-21 13:56     /tmp/climate/output/graph/tmax.vs.time/_SUCCESS
+2  drwxr-xr-x tongx supergroup           0 2014-07-21 13:56     /tmp/climate/output/graph/tmax.vs.time/_outputs
+3  -rw-r--r-- tongx supergroup    94 bytes 2014-07-21 13:56 /tmp/climate/output/graph/tmax.vs.time/part-m-00000
+4  -rw-r--r-- tongx supergroup    94 bytes 2014-07-21 13:56 /tmp/climate/output/graph/tmax.vs.time/part-m-00001
+5  -rw-r--r-- tongx supergroup    94 bytes 2014-07-21 13:56 /tmp/climate/output/graph/tmax.vs.time/part-m-00002
+6  -rw-r--r-- tongx supergroup    94 bytes 2014-07-21 13:56 /tmp/climate/output/graph/tmax.vs.time/part-m-00003
+7  -rw-r--r-- tongx supergroup    94 bytes 2014-07-21 13:56 /tmp/climate/output/graph/tmax.vs.time/part-m-00004
+8  -rw-r--r-- tongx supergroup    94 bytes 2014-07-21 13:56 /tmp/climate/output/graph/tmax.vs.time/part-m-00005
+9  -rw-r--r-- tongx supergroup    94 bytes 2014-07-21 13:56 /tmp/climate/output/graph/tmax.vs.time/part-m-00006
+10 -rw-r--r-- tongx supergroup    94 bytes 2014-07-21 13:56 /tmp/climate/output/graph/tmax.vs.time/part-m-00007
+11 -rw-r--r-- tongx supergroup    94 bytes 2014-07-21 13:56 /tmp/climate/output/graph/tmax.vs.time/part-m-00008
+12 -rw-r--r-- tongx supergroup    94 bytes 2014-07-21 13:56 /tmp/climate/output/graph/tmax.vs.time/part-m-00009
+```
+All 'part-m-...' files are empty since we did not have real output content from the map-reduce job.
+Downloaded files are actually created ps files are copied into a sub-directory named `_outputs`
+```{r eval=FALSE,tidy=FALSE}
+rhls("/tmp/climate/output/graph/tmax.vs.time/_outputs")
+```
+```
+   permission owner      group     size          modtime                                                                   file
+1  -rw-r--r-- tongx supergroup 64.92 kb 2014-07-21 13:56 /tmp/climate/output/graph/tmax.vs.time/_outputs/tmax.vs.time.030936.ps
+2  -rw-r--r-- tongx supergroup 64.88 kb 2014-07-21 13:56 /tmp/climate/output/graph/tmax.vs.time/_outputs/tmax.vs.time.035908.ps
+3  -rw-r--r-- tongx supergroup 64.92 kb 2014-07-21 13:56 /tmp/climate/output/graph/tmax.vs.time/_outputs/tmax.vs.time.080478.ps
+4  -rw-r--r-- tongx supergroup 66.41 kb 2014-07-21 13:56 /tmp/climate/output/graph/tmax.vs.time/_outputs/tmax.vs.time.097847.ps
+5  -rw-r--r-- tongx supergroup 66.39 kb 2014-07-21 13:56 /tmp/climate/output/graph/tmax.vs.time/_outputs/tmax.vs.time.160549.ps
+6  -rw-r--r-- tongx supergroup 64.42 kb 2014-07-21 13:56 /tmp/climate/output/graph/tmax.vs.time/_outputs/tmax.vs.time.176905.ps
+7  -rw-r--r-- tongx supergroup 64.72 kb 2014-07-21 13:56 /tmp/climate/output/graph/tmax.vs.time/_outputs/tmax.vs.time.221707.ps
+8  -rw-r--r-- tongx supergroup 64.72 kb 2014-07-21 13:56 /tmp/climate/output/graph/tmax.vs.time/_outputs/tmax.vs.time.285728.ps
+9  -rw-r--r-- tongx supergroup 66.43 kb 2014-07-21 13:56 /tmp/climate/output/graph/tmax.vs.time/_outputs/tmax.vs.time.390128.ps
+10 -rw-r--r-- tongx supergroup 65.39 kb 2014-07-21 13:56 /tmp/climate/output/graph/tmax.vs.time/_outputs/tmax.vs.time.472839.ps
+```
+
+Then we can copy the files from HDFS to local file system by using `rhget` function in `RHIPE`.
+
+```{r eval=FALSE,tidy=FALSE}
+rhget("/tmp/climate/output/graph/tmax.vs.time/_outputs/tmax.vs.time.030936.ps", "~/")
+```
+![time series of the station](./plots/tmax.vs.time.030936.png)
+
+
+### Distribution of Temperature ###
+
+Distribution plot of the response, maximum temperature, is one of the important plot that we want 
+to illustrate. So we are going to plot the normal quantile plot conditional on month for each station.
+
+```{r eval=FALSE, tidy=FALSE}
+map <- expression({
+  lapply(seq_along(map.values), function(r) {
+    tmp <- map.values[[r]]
+    month <- c("Jan","Feb","Mar","Apr","May","June","July","Aug", "Sep", "Oct", "Nov", "Dec")
+    tmp$month <- factor(tmp$month, levels = month)
+    tmp <- tmp[with(tmp, order(year, month)),]
+    trellis.device(postscript, 
+      file  = paste("./tmp/QQ.tmax.month", map.keys[[r]], "ps", sep = "."), 
+      color = TRUE, 
+      paper = "legal"
+    )  
+    a <- qqmath(~ tmax | month,
+      data         = tmp,
+      distribution = qnorm,
+      aspect       = "xy",
+      layout       = c(12,1),
+      pch          = 16,
+      cex          = 0.5, 
+      main         = list(label = paste("Station ", map.keys[[r]], sep=""), cex = 1.5),
+      xlab         = list(label = "Unit normal quantile", cex = 1.2),
+      ylab         = list(label = "Max Temperature(degrees centigrade)", cex = 1.2),
+      prepanel     = prepanel.qqmathline,
+      panel        = function(x, y,...) {
+        panel.grid()
+        panel.qqmathline(x, y = x)
+        panel.qqmath(x, y,...)
+      }
+	  )
+	  print(a)
+    dev.off()
+  })
+})
+z <- rhwatch(
+  map       = map,
+  input     = "/tmp/climate/output/tmax.bystation.10",
+  output    = "/tmp/climate/output/graph/QQ.tmax.month",
+  setup = expression(
+    map = {library(lattice)}
+  ),
+  mapred    = list( 
+    mapred.reduce.tasks = 0, 
+    mapred.task.timeout = 0
+  ),
+  copyFiles = TRUE,
+  readback  = FALSE,
+)
+```
+
+We still need to use `rhget` function to copy the ps plots from HDFS to the local file system.
+```{r eval=FALSE, tidy=FALSE}
+rhget("/tmp/climate/output/graph/QQ.tmax.month/_outputs/QQ.tmax.month.472839.ps", "~/")
+```
+![QQ plot of tmax conditional on month](./plots/QQ.tmax.month.472839.png)

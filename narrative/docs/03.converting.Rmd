@@ -1,0 +1,315 @@
+## Converting to R Objects ##
+
+### R Objects: Dividing by year ###
+
+The data needs to be converted to R objects. Since we will be doing repeated analyses on the data, 
+it is better to spend time converting them to R objects making subsequent computations faster, 
+rather than tokenizing strings and converting to R objects for every analysis. In the following,
+we are going to use maximum temperature as the example.
+
+A sample of the text file:
+
+```
+472209     42   16   11   34   61   83   69   46   82    6   20    6  111111111111
+472240     21   16   12   34  104   95   95   55  127   12   44   14  111111111111
+472314     28    9    5   35   86   80   59   66  137   10   30   28  111111111111
+...
+```
+The complete maximum temperature files based on regular station data have the names tmax.complete.Ynnn
+where nnn = 001, 002, ..., 103 and 001=1895 and 103=1997. Each separate data file consists of the maximum
+temperature for a single year. Each line of the file is data for one station according to the format: 
+station id, 12 maximum temperature ( Jan-DEC), 12 missing  value/infill codes (1=missing, 0=present) 
+
+Our first `RHIPE` task would be how to convert the text files on HDFS to R objects. For our climate
+data, the first thing we can do is to create one data frame for each year since our text files are
+separated by year. 
+
+```{r eval=FALSE, tidy=FALSE}
+map <- expression({
+  y <- do.call("rbind", lapply(map.values, function(r) {
+    row <- strsplit(r, " +")[[1]]
+    c(row[1], row[2:13], substring(row[14], 1:12, 1:12))
+  }))
+  file <- Sys.getenv("mapred.input.file")
+  k <- as.numeric(substr(unlist(strsplit(strsplit(file, "/")[[1]][8], "[.]"))[3], 2, 4))
+  miss <- as.data.frame(matrix(as.numeric(y[, (1:12) + 13]), ncol = 12))
+  tmp <- as.data.frame(matrix(as.numeric(y[, (1:12) + 1]), ncol = 12))
+  name <- y[, 1]
+  tmp <- tmp/10
+  tmp[miss == 1] <- NA
+  names(tmp) <- c(
+    "Jan", "Feb", "Mar", "Apr", "May", "June", 
+    "July", "Aug", "Sep", "Oct", "Nov", "Dec"
+  )
+  tmp <- cbind(station.id = name, tmp, year = rep((k + 1894)))
+  UStmax <- data.frame(
+    station.id = rep(tmp$station.id, 12),
+    elev       = rep(UStinfo$elev, 12),
+    lon        = rep(UStinfo$lon, 12),
+    lat        = rep(UStinfo$lat, 12),
+    year       = rep(tmp$year,12),
+    month      = rep(names(tmp)[2:13], each = dim(tmp)[1]),
+    tmax       = c(tmp[, 2], tmp[, 3], tmp[, 4], tmp[, 5], tmp[, 6], tmp[, 7], 
+                   tmp[, 8], tmp[, 9], tmp[, 10], tmp[, 11], tmp[, 12], tmp[, 13])
+  )
+  rhcollect(unique(tmp$year), UStmax)
+})
+mr <- rhwatch(
+  map      = map,
+  shared   = c("/tmp/climate/UStinfo.RData"),
+  setup    = expression(map = {load("UStinfo.RData")}),
+  input    = rhfmt("/tmp/climate/NCAR_tinfill/tmax", type = "text"),
+  output   = rhfmt("/tmp/climate/output/tmax.byyear", type = "sequence"),
+  mapred   = list( mapred.reduce.tasks = 100, rhipe_map_buff_size = 8125 ),
+  readback = FALSE
+)
+```
+
+A valid map-reduce job in `RHIPE` is consist of a map expression, an optional reduce expression, and a
+execution function `rhwatch()`. Let's run this entire code in R first. In R console you will see that
+job running information is keeping popping out, which will be helpful for you to have some idea 
+about the status of running job. 
+
+```
+[Fri Jun 26 23:43:04 2014] Name:2014-06-26 23:43:01 Job: job_201406101143_0090  State: PREP Duration: 0.246
+URL: http://hadoop-01.rcac.purdue.edu:50030/jobdetails.jsp?jobid=job_201406101143_0090
+       pct numtasks pending running complete killed failed_attempts killed_attempts
+map      0      103     103       0        0      0               0               0
+reduce   0      100     100       0        0      0               0               0
+Waiting 5 seconds
+[Fri Jun 26 23:43:09 2014] Name:2014-06-26 23:43:01 Job: job_201406101143_0090  State: RUNNING Duration: 7.212
+URL: http://hadoop-01.rcac.purdue.edu:50030/jobdetails.jsp?jobid=job_201406101143_0090
+       pct numtasks pending running complete killed failed_attempts killed_attempts
+map      0      103       0     103        0      0               0               0
+reduce   0      100     100       0        0      0               0               0
+Waiting 5 seconds
+```
+
+There will be total 103 key/value pairs in the output files. In `RHIPE`, key/value pairs are R lists 
+with two elements, one for the key and one for the value. In this example, key is the year, value is 
+a data frame with the observations for 12 months over 8,125 stations for that year. `rhread()` function
+is used to read in key/value pairs on HDFS. We can specify the `type` to be `sequence`, `map`, or `text`, 
+it depends on what type of file it is. The default is `sequence` which is the type of key/value pairs 
+file on HDFS. We can also specify how many key/value pairs we want to read into R from HDFS by `max`
+argument.
+
+```{r eval=FALSE, tidy=FALSE}
+rst1 <- rhread("/tmp/climate/output/tmax.byyear", max = 1)
+str(rst1)
+```
+```
+List of 1
+ $ :List of 2
+  ..$ : num 1913
+  ..$ :'data.frame':    97500 obs. of  7 variables:
+  .. ..$ station.id: Factor w/ 8125 levels "010148","010160",..: 1 2 3 4 5 6 7 8 9 10 ...
+  .. ..$ elev      : num [1:97500] 339 201 201 49 107 184 308 220 92 88 ...
+  .. ..$ lon       : num [1:97500] -86.2 -86 -85.9 -88.1 -86.5 ...
+  .. ..$ lat       : num [1:97500] 34.2 33 33 33.1 31.3 ...
+  .. ..$ year      : num [1:97500] 1913 1913 1913 1913 1913 ...
+  .. ..$ month     : Factor w/ 12 levels "Apr","Aug","Dec",..: 5 5 5 5 5 5 5 5 5 5 ...
+  .. ..$ tmax      : num [1:97500] NA NA NA NA NA NA NA NA NA NA ...
+```
+Here we read in one key/value pair, key is 1913, value is a data frame with 97,500 rows, 7 columns.
+
+Now let's spend more time on the code.
+
+#### The `map` expression ####
+
+Map is an R expression that is evaluated by RHIPE during the map stage. For each task, RHIPE will 
+call this expression multiple times. The input and output of map function are both key/value pairs. 
+A key/value pair (KVP) is an abstract data type that includes a group of key identifiers and a set
+of associated values. In other words, the map function processes a key/value pair to generate a set
+of intermediate key/value pairs. So in our previous map function, we process the key/value pairs we
+got from the text file into new key/value pairs which every year is the key, and the corresponding
+value would be a data frame. The key/value pairs read in from input file will be saved as `map.keys` 
+and `map.values` respectively. `map.keys` and `map.values` are two lists which are consist of all 
+keys and all values that will be executed in one task at one moment respectively. In this example, 
+which the input file of a map-reduce job is a text file, all keys (indices) in map.keys will not have
+any meaning but will be unique, and all the corresponding values in map.values are each row of text
+file saved as a string.
+
+So in map expression, we split the one string of each row to individual maximum temperature 
+measurement, as well as the measurement status for each `map.values`. and then combined each row.
+The length of `map.keys` and `map.values` are 8,125 which is the number of row in each text file. 
+We will explain this with more details in later Execution function session. This makes sure that
+for each task, we have all rows for one year. `Sys.getenv("mapred.input.file")` here is how we get
+the name of the file is processed by mapper. This is necessary for our example since the only place
+keep the year information is the file name. After this, we assigned year to `k`, assigned `NA` to 
+all months with missing value. Finally we created a data frame `UStmax` including `station.id`, 
+`elev`, `lon`, `lat`, `year`, `month`, and `tmax`.
+
+Finally we collect a new key/value pair, which key is year and value is data frame `UStmax`, by 
+using `rhcollect()` function in RHIPE. The first argument of `rhcollect()` is the key, and the second
+argument is the value. Suppose we have 100 rows, and each row has 20 words, by using our map function, 
+we will be collecting 2,000 new key/value pairs, or we call them intermediate key/value pairs.
+
+#### The `reduce` expression ####
+
+In this example, we do not include any reduce expression. It is OK to skip a reduce step in a map-reduce
+job. What happens is after the map step, all intermediate key/value pairs will be first sorted based
+on key and then wrote onto HDFS.
+
+#### Execution function ####
+
+After the map and reduce expression, we are heading to the execution function of a map-reduce job in 
+`RHIPE`. `rhwatch()` is a call that packages the Map-reduce job which is sent to Hadoop. In `rhwatch()`
+function, we specify what the map and reduce expression of the map-reduce job is. We assign the map and 
+reduce expression to `map` and `reduce` argument in `rhwatch()` respectively. `Input` and `output`
+argument in `rhwatch()` function is used to specify the path on HDFS of input file and output file 
+respectively. `mapred` argument is a list that can be used to customize the `Hadoop` and `RHIPE` 
+options. Here we specify the `mapred.reduce.tasks` to be 100, so the number of reduce tasks will be 
+set to be 100. This number also is related to the number of output files, since each reduce task 
+will generate one piece of output file for the final output. `rhipe_map_buff_size` is set up to be
+8,125, this argument is useful when we want to control how many keys and values are in `map.keys`
+and `map.values` for one task if the type of input file are `text`. In later section, we will give 
+more details about this argument.
+
+### R Objects: Dividing by station.id ###
+
+If we are interested in applying time series data analysis on each station, it will be reasonable 
+to assume we want to have new key/value pairs such that the keys are `station.id`, and the values
+are corresponding data frame of all 1,236 observations for the station.
+
+```{r eval=FALSE, tidy=FALSE}
+map <- expression({
+  lapply(seq_along(map.keys), function(r) {
+    lapply(1:dim(map.values[[r]]), function(x) {
+      key <- as.character(map.values[[r]][x, 1])
+      value <- map.values[[r]][x, -1]
+      rhcollect(key, value)
+    })
+  })
+})
+reduce <- expression(
+  pre = {
+    combined <- data.frame()
+  },
+  reduce = {
+    combined <- rbind(combined, do.call(rbind, reduce.values))
+  },
+  post = { 
+    if(sum(!is.na(combined$tmax)) == 1236) {
+      rhcollect(reduce.key, combined)
+    }
+  }
+)
+z <- rhwatch(
+  map      = map,
+  reduce   = reduce,
+  input    = rhfmt("/tmp/climate/output/tmax.byyear", type = "sequence"),
+  output   = rhfmt("/tmp/climate/output/tmax.bystation", type = "sequence"),
+  mapred   = list(mapred.reduce.tasks = 64),
+  readback = FALSE
+)
+```
+
+#### The `map` expression ####
+
+In the `map`, we iterate over all rows from each key/value pairs. For each row, we create `key` 
+object which is the station id, and `value` object which is the rest of the row, and then we
+collect one key/value pair for each row using `rhcollect()`. There are 103 key/value pairs in 
+the input file `/tmp/climate/output/tmax.byyear`, and each value has 97,500 rows. Totally, we
+will collect over 10 million key/value pairs in the map step.
+
+#### The `reduce` expression ####
+
+As we saw in the code, a reduce expression should like:
+
+```{r eval=FALSE, tidy=FALSE}
+reduce <- expression(
+  pre = {
+    # initialize objects in which results will be stored
+  },
+  reduce = {
+    # take current batch of reduce.values and update the result
+  },
+  post = {
+    # emit output key-value pairs using collect(key, value)
+  }
+)
+```
+
+In RHIPE, `reduce` is an R expression that is evaluated by `RHIPE` during the reduce step, or it is
+a vector of expressions with names `pre`, `reduce`, and `post`. All key/value pairs that share same 
+key will be grouped together and processed to be applied reduce function. In reduce-pre session, we 
+initialize the objects in which results will be stored, here is an empty data frame, `combined`. 
+`reduce.key` is the shared key, and `reduce.values` is a list that includes all values corresponding
+to that unique `reduce.key`. In reduce-reduce session, we cumulative all `reduce.values`, here we 
+combined all rows by row for each station id. Finally in post session, we collect the final key/value
+pair not for every station, but only the stations that do not have missing observations.
+
+```{r eval=FALSE, tidy=FALSE}
+rst2 <- rhread("/tmp/climate/output/tmax.bystation", max=10)
+str(rst2)
+```
+```
+List of 10
+ $ :List of 2
+  ..$ : chr "080478"
+  ..$ :'data.frame':  1236 obs. of  6 variables:
+  .. ..$ elev : num [1:1236] 38 38 38 38 38 38 38 38 38 38 ...
+  .. ..$ lon  : num [1:1236] -81.8 -81.8 -81.8 -81.8 -81.8 ...
+  .. ..$ lat  : num [1:1236] 27.9 27.9 27.9 27.9 27.9 27.9 27.9 27.9 27.9 27.9 ...
+  .. ..$ year : num [1:1236] 1978 1978 1978 1978 1978 ...
+  .. ..$ month: Factor w/ 12 levels "Apr","Aug","Dec",..: 10 2 3 11 12 7 5 9 8 12 ...
+  .. ..$ tmax : num [1:1236] 28.1 33.3 25.1 29.6 33.1 32.6 18.8 31.9 27.5 32.4 ...
+ $ :List of 2
+  ..$ : chr "097847"
+  ..$ :'data.frame':  1236 obs. of  6 variables:
+  .. ..$ elev : num [1:1236] 14 14 14 14 14 14 14 14 14 14 ...
+  .. ..$ lon  : num [1:1236] -81.2 -81.2 -81.2 -81.2 -81.2 -81.2 -81.2 -81.2 -81.2 -81.2 ...
+  .. ..$ lat  : num [1:1236] 32.1 32.1 32.1 32.1 32.1 ...
+  .. ..$ year : num [1:1236] 1901 1901 1901 1901 1901 ...
+  .. ..$ month: Factor w/ 12 levels "Apr","Aug","Dec",..: 1 7 10 4 5 2 8 12 6 9 ...
+  .. ..$ tmax : num [1:1236] 21.7 30.8 18.4 14.9 16.2 30.7 20.3 30 32.1 29.3 ...
+...
+```
+The result is exactly what we want. For each key/value pair, the key is the `station.id`, and the
+value is a data frame with 6 columns and 1,236 rows.
+
+### Subset: 10 Stations ###
+
+For the demonstration purpose, we are going to only use 10 stations as the subset to demonstrate the
+rest of analysis.
+
+```{r eval=FALSE, tidy=FALSE}
+data <- rhread("/tmp/climate/output/tmax.bystation", max=10)
+rhwrite(data, file="/tmp/climate/output/tmax.bystation.10")
+```
+```
+Wrote 1.2 MB,10 chunks, and 10 elements (100% complete)
+```
+
+The first question in our head now is where are these 10 stations? By using and `panel` in `lattice`
+library, this can be done easily.
+
+```{r eval=FALSE, tidy=FALSE}
+library(maps)
+library(lattice)
+us.map <- map('state', plot = FALSE, fill = TRUE)
+lo <- as.data.frame(
+  do.call("rbind", lapply(data, 
+    function(r){c(r[[2]]$lat[1], r[[2]]$lon[1])})
+  )
+)
+st <- unlist(lapply(data, "[[", 1))
+location <- cbind(st, lo)
+names(location) <- c("station.id", "lat", "lon")
+b <- xyplot(lat ~ lon,
+  data  = location,
+  xlab  = list(label="Longitude"),
+  ylab  = list(label="Latitude"),
+  pch   = 16,
+  cex   = 1,
+  col   = "red",
+  xlim  = c(-125, -66),
+  ylim  = c(24.5, 50), 
+  panel = function(...) {
+    panel.polygon(us.map$x,us.map$y)   
+    panel.xyplot(...)
+  }
+)
+print(b)
+```
+![location of the 10 stations](./plots/spatial.png)

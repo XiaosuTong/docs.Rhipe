@@ -1,0 +1,1029 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <title>RHIPE: Narrative Climate</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="">
+    <meta name="author" content="">
+
+    <link href="assets/bootstrap/css/bootstrap.css" rel="stylesheet">
+    <link href="assets/custom/custom.css" rel="stylesheet">
+    <!-- font-awesome -->
+    <link href="assets/font-awesome/css/font-awesome.min.css" rel="stylesheet">
+
+    <!-- prism -->
+    <link href="assets/prism/prism.css" rel="stylesheet">
+    <link href="assets/prism/prism.r.css" rel="stylesheet">
+    <script type='text/javascript' src='assets/prism/prism.js'></script>
+    <script type='text/javascript' src='assets/prism/prism.r.js'></script>
+    
+    
+    
+    <script type="text/javascript" src="assets/MathJax/MathJax.js?config=TeX-AMS-MML_HTMLorMML">
+   MathJax.Hub.Config({    
+     extensions: ["tex2jax.js"],    
+     "HTML-CSS": { scale: 100}    
+   });
+   </script>
+    
+    <!-- HTML5 shim, for IE6-8 support of HTML5 elements -->
+    <!--[if lt IE 9]>
+      <script src="js/html5shiv.js"></script>
+    <![endif]-->
+    
+    <link href='http://fonts.googleapis.com/css?family=Lato' rel='stylesheet' type='text/css'>
+    <!-- <link href='http://fonts.googleapis.com/css?family=Lustria' rel='stylesheet' type='text/css'> -->
+    <link href='http://fonts.googleapis.com/css?family=Bitter' rel='stylesheet' type='text/css'>
+    
+
+    <!-- Fav and touch icons -->
+    <link rel="apple-touch-icon-precomposed" sizes="144x144" href="ico/apple-touch-icon-144-precomposed.png">
+    <link rel="apple-touch-icon-precomposed" sizes="114x114" href="ico/apple-touch-icon-114-precomposed.png">
+      <link rel="apple-touch-icon-precomposed" sizes="72x72" href="ico/apple-touch-icon-72-precomposed.png">
+                    <link rel="apple-touch-icon-precomposed" href="ico/apple-touch-icon-57-precomposed.png">
+                                   <!-- <link rel="shortcut icon" href="ico/favicon.png"> -->
+  </head>
+
+  <body>
+
+    <div class="container-narrow">
+
+      <div class="masthead">
+        <ul class="nav nav-pills pull-right">
+           
+        </ul>
+        <p class="myHeader">RHIPE: Narrative Climate</p>
+      </div>
+
+      <hr>
+
+<div class="container-fluid">
+   <div class="row-fluid">
+   
+   <div class="col-md-3 well">
+   <ul class = "nav nav-list" id="toc">
+   <li class='nav-header unselectable' data-edit-href='01.intro.Rmd'>Introduction</li>
+      
+      <li class='active'>
+         <a target='_self' class='nav-not-header' href='#background'>Background</a>
+      </li>
+
+
+      <li class='active'>
+         <a target='_self' class='nav-not-header' href='#getting-started'>Getting Started</a>
+      </li>
+
+
+<li class='nav-header unselectable' data-edit-href='02.copying.Rmd'>Copying the Data</li>
+      
+      <li class='active'>
+         <a target='_self' class='nav-not-header' href='#dataset-information'>Dataset Information</a>
+      </li>
+
+
+      <li class='active'>
+         <a target='_self' class='nav-not-header' href='#copying-the-data-to-hdfs'>Copying the Data to HDFS</a>
+      </li>
+
+
+<li class='nav-header unselectable' data-edit-href='03.converting.Rmd'>Converting to R Objects</li>
+      
+      <li class='active'>
+         <a target='_self' class='nav-not-header' href='#r-objects-dividing-by-year'>R Objects: Dividing by year</a>
+      </li>
+
+
+      <li class='active'>
+         <a target='_self' class='nav-not-header' href='#r-objects-dividing-by-stationid'>R Objects: Dividing by station.id</a>
+      </li>
+
+
+      <li class='active'>
+         <a target='_self' class='nav-not-header' href='#subset-10-stations'>Subset: 10 Stations</a>
+      </li>
+
+
+<li class='nav-header unselectable' data-edit-href='04.exploration.Rmd'>Exploration of Data</li>
+      
+      <li class='active'>
+         <a target='_self' class='nav-not-header' href='#time-series-of-each-station'>Time Series of each station</a>
+      </li>
+
+
+      <li class='active'>
+         <a target='_self' class='nav-not-header' href='#distribution-of-temperature'>Distribution of Temperature</a>
+      </li>
+
+
+<li class='nav-header unselectable' data-edit-href='05.stlfit.Rmd'>STL+ Fitting</li>
+      
+      <li class='active'>
+         <a target='_self' class='nav-not-header' href='#modeling-and-diagnostics'>Modeling and Diagnostics</a>
+      </li>
+
+
+      <li class='active'>
+         <a target='_self' class='nav-not-header' href='#tunning-parameter'>Tunning Parameter</a>
+      </li>
+
+   </ul>
+   </div>
+
+<div class="col-md-9 tab-content" id="main-content">
+
+<div class='tab-pane active' id='background'>
+<h3>Background</h3>
+
+<p>This narrative documentation covers an implementation of Divide and Recombine (D&amp;R) in the R and 
+Hadoop Integrated Programming Environment, called <code>RHIPE</code>.</p>
+
+<p>The goal of D&amp;R is to provide an environment for data analysts to carry out deep statistical analysis
+of large, complex data with as much ease and flexibility as is possible with small datasets.</p>
+
+<p>D&amp;R is accomplished by dividing data into meaningful subsets, applying analytical methods to those 
+subsets, and recombining the results. Recombinations can be numerical or visual. </p>
+
+<p>The diagram below is a visual representation of the D&amp;R process.
+<img src="./plots/drdiagram.svg" alt="Alt text">
+The raw data is stored in some arbitrary structure. We apply a division method to it to obtain a 
+meaningful partitioning. Then we attack this partitioning with several visual and numerical 
+recombination methods, where we apply the method independently to each subset and combine the results.
+There are many forms of divisions and recombinations, many of which will be covered in this tutorial.</p>
+
+<p>A clearer picture of how D&amp;R works should be reached by reading and trying out the examples in the 
+documentation. It is also recommended to read the references below.</p>
+
+<h4>Outline</h4>
+
+<ul>
+<li>First, we </li>
+<li>Next, we </li>
+<li>Then, we </li>
+<li>We also provide R source files for all of the examples throughout the documentation.</li>
+</ul>
+
+<h4>Reference</h4>
+
+<ul>
+<li><a href="http://datadr.org">datadr.org</a>: Divide and Recombine (D&amp;R) with <code>RHIPE</code></li>
+<li><a href="http://github.com/saptarshiguha/RHIPE">RHIPE</a>: the engine that makes D&amp;R work for large datasets</li>
+<li><a href="http://github.com/hafen/datadr">datadr</a>: R package providing the D&amp;R framework</li>
+<li><a href="http://github.com/hafen/trelliscope">trelliscope</a>: the visualization companion to <code>datadr</code></li>
+<li><a href="http://onlinelibrary.wiley.com/doi/10.1002/sta4.7/full">Large complex data: divide and recombine (D&amp;R) with RHIPE. <em>Stat</em>, 1(1), 53-67</a></li>
+</ul>
+
+</div>
+
+
+<div class='tab-pane' id='getting-started'>
+<h3>Getting Started</h3>
+
+<p>The goal of this documentation is to provide useful examples of how to use RHIPE as a supplement to
+the introductory tutorials provided <a href="http://xiaosutong.github.io/docs-RHIPE/tutorial/">here</a>, which 
+focus more on illustrating functionality than doing something useful with data.</p>
+
+<h4>RHIPE</h4>
+
+<p><code>RHIPE</code> is the R and Hadoop Integrated Programming Environment. It provides a way to execute Hadoop 
+MapReduce jobs completely from within R and with R data structures.</p>
+
+<p>To install and use <code>RHIPE</code>, the following are required:</p>
+
+<ol>
+<li>A cluster of machines (a single node can be used but it pointless outside of testing) -- these 
+machines can be commodity workstations</li>
+<li>Hadoop installed and configured on the cluster</li>
+<li><code>RHIPE</code> and its dependencies (protocol buffers) installed on all the nodes</li>
+</ol>
+
+<p>(1) is often a large barrier to entry. (2) can require a lot of patience and know-how. (3) isn&#39;t too
+difficult.</p>
+
+<p>These requirements are generally enough of a hinderance that only people very serious about scalable
+data analysis have the perseverance to get a system running. Unfortunately, this is currently the 
+price to pay for scalability. We are working on providing easier access and better documentation for
+getting set up with this computing platform.</p>
+
+<h4>Loading</h4>
+
+<p>After all set up and installation has been done, We can load the package:</p>
+
+<pre><code class="r">library(Rhipe)
+</code></pre>
+
+<pre><code>Loading required package: codetools
+Loading required package: rJava
+Loading required package: testthat
+------------------------------------------------
+| Please call rhinit() else RHIPE will not run |
+------------------------------------------------
+</code></pre>
+
+<p>Before any <code>RHIPE</code> code, we have to initialize the package by using:</p>
+
+<pre><code class="r">rhinit()
+</code></pre>
+
+<pre><code>Rhipe: Using Rhipe.jar file
+Initializing Rhipe v0.74.0
+Initializing mapfile caches
+</code></pre>
+
+<p><code>rhinit()</code> function is trying to initialize the <code>RHIPE</code> subsystem. The objective of <code>RHIPE</code> is to let 
+the user focus on thinking about the data. The difficulties in distributing computations and 
+storing data across a cluster are automatically handled by <code>RHIPE</code> and Hadoop. So in <code>rhinit()</code>
+not only the configuration of <code>Java</code> and <code>Hadoop</code>, but also <code>RHIPE</code> options have been set up. We
+will illustrate more details about those in later sections. As a user, all default configuration
+of <code>rhinit()</code> will be enough, and no more argument is necessary for this moment.</p>
+
+<p>And now we are ready to go.</p>
+
+</div>
+
+
+<div class='tab-pane' id='dataset-information'>
+<h3>Dataset Information</h3>
+
+<p>For the rest of documentation, we are going to demonstrate how to use <code>RHIPE</code> to analyze a large and
+complex data from real life. </p>
+
+<h4>Source</h4>
+
+<p>The data is a compendium of different levels of weather data ranging from stations taking regular 
+hourly measurements, such as those at airports, to cooperative observer stations where the records 
+may only include daily values, have gaps in time or might not measure both temperature and precipitation. 
+The original source for the data are the data archives at the 
+<a href="http://www.ncdc.noaa.gov">National Climatic Data Center</a> although these data have been further 
+processed to combine stations at similar locations and eliminate stations with short records. </p>
+
+<h4>Discription</h4>
+
+<p>The data set we are going to download is about observed monthly total precipitation and monthly 
+average minimum and maximum daily temperatures for the coterminous US 1895-1997. Totally, there are 
+12,392 stations all over the nation, 8,125 stations for temperature, 11,918 stations for precipitation.
+For each station, an unique ID, station name, elevation, longitude, and altitude are available. If a 
+measurement of a specific station at a specific month is treated as one observation, then there are 
+6,204,442 observations for precipitation and 4,285,841 observations for temperature. </p>
+
+</div>
+
+
+<div class='tab-pane' id='copying-the-data-to-hdfs'>
+<h3>Copying the Data to HDFS</h3>
+
+<p>The Climate data can be downloaded at <a href="http://www.image.ucar.edu/GSP/Data/US.monthly.met/">This site</a>.
+We are going to download the <code>tar</code> files and unzip them under the current working directory in R.</p>
+
+<pre><code class="r">for(x in c(&quot;t&quot;, &quot;p&quot;)) {
+  #t for temperature, and p for precipitation
+  address &lt;- sprintf(&quot;http://www.image.ucar.edu/pub/nychka/NCAR_%sinfill_others.tar&quot;, x)
+  system(sprintf(&quot;wget %s ./&quot;, address))
+  system(sprintf(&quot;tar -xvf NCAR_%sinfill_others.tar&quot;, x))
+}
+</code></pre>
+
+<p>Two folders are locating in your working directory now, and within each folder, there are &#39;METAinfo&#39;,
+&#39;README&#39;, and &#39;tmax.complete.Ynnn&#39;, &#39;tmin.complete.Ynnn&#39; in temperature, and &#39;ppt.complete.Ynnn&#39; 
+in precipitation, where nnn = 001, 002, ..., 103.</p>
+
+<p>Next thing would be copying all those data files to HDFS. As long as a file wants to be the input 
+of a mapreduce job, it has to be located on HDFS. The <code>RHIPE</code> function that can help us to achieve
+this goal is <code>rhput()</code>. As we&#39;ve already seen previously, the first two arguments in <code>rhput()</code> are
+the path of the local file to be copied to the HDFS which are <code>NCAR_pinfill/</code> or <code>NCAR_tinfill/</code>
+under the current working directory, and path on HDFS which the file will be copied to. Here the 
+path on HDFS is under <code>/tmp/climate/</code>. </p>
+
+<pre><code class="r">for(x in formatC(1:103, width = 3, flag = &quot;0&quot;)) {
+  rhput(paste(&quot;./NCAR_pinfill/ppt.complete.Y&quot;, x, sep = &quot;&quot;), 
+        paste(&quot;/tmp/climate/NCAR_pinfill/ppt.complete.Y&quot;, x, sep = &quot;&quot;)
+  )
+}
+for(x in formatC(1:103, width = 3, flag = &quot;0&quot;)) {
+  rhput(paste(&quot;./NCAR_tinfill/tmax.complete.Y&quot;, x, sep = &quot;&quot;), 
+        paste(&quot;/tmp/climate/NCAR_tinfill/tmax/tmax.complete.Y&quot;, x, sep = &quot;&quot;)
+  )
+  rhput(paste(&quot;./NCAR_tinfill/tmin.complete.Y&quot;, x, sep = &quot;&quot;), 
+        paste(&quot;/tmp/climate/NCAR_tinfill/tmin/tmin.complete.Y&quot;, x, sep=&quot;&quot;)
+  )
+}
+rhls(&quot;/tmp/climate/NCAR_pinfill&quot;)
+</code></pre>
+
+<pre><code>    permission owner      group     size          modtime                                        file
+1   -rw-r--r-- tongx supergroup   966 kb 2014-06-25 17:17 /tmp/climate/NCAR_pinfill/ppt.complete.Y001
+2   -rw-r--r-- tongx supergroup   966 kb 2014-06-25 17:17 /tmp/climate/NCAR_pinfill/ppt.complete.Y002
+3   -rw-r--r-- tongx supergroup   966 kb 2014-06-25 17:17 /tmp/climate/NCAR_pinfill/ppt.complete.Y003
+4   -rw-r--r-- tongx supergroup   966 kb 2014-06-25 17:16 /tmp/climate/NCAR_pinfill/ppt.complete.Y004
+...
+99  -rw-r--r-- tongx supergroup   966 kb 2014-06-25 17:17 /tmp/climate/NCAR_pinfill/ppt.complete.Y099
+100 -rw-r--r-- tongx supergroup   966 kb 2014-06-25 17:17 /tmp/climate/NCAR_pinfill/ppt.complete.Y100
+101 -rw-r--r-- tongx supergroup   966 kb 2014-06-25 17:17 /tmp/climate/NCAR_pinfill/ppt.complete.Y101
+102 -rw-r--r-- tongx supergroup   966 kb 2014-06-25 17:17 /tmp/climate/NCAR_pinfill/ppt.complete.Y102
+103 -rw-r--r-- tongx supergroup   966 kb 2014-06-25 17:17 /tmp/climate/NCAR_pinfill/ppt.complete.Y103
+</code></pre>
+
+<p>By calling the <code>rhls()</code> function, we are able to see all files and sub-directories under one 
+specific directory on HDFS. The output of <code>rhls()</code> is a data frame object in R with six columns
+which are <code>permission</code>, <code>owner</code>, <code>group</code>, <code>size</code>, <code>modtime</code>, and <code>file</code>. All those information
+about a file on HDFS are very similar to the local file system.</p>
+
+<p>Two &#39;METAinfo&#39; files records the station.id, elevation, latitude, and longitude information for each
+stations. We will read in this text file into R, and create two R objects which contain all station
+information. The reason that we are considering to do this is that we want every single task of our
+mapreduce job can access this R object, which means we have to save this R object into HDFS. If we 
+want to save an R object as <code>.RData</code> into HDFS, instead of <code>rhput()</code>, <code>rhsave()</code> function should be 
+used. It is very similar to the R base function <code>save()</code>, the only difference is in <code>file</code> argument, 
+we specify the absolute path to file on HDFS, not local file system path.</p>
+
+<pre><code class="r">UStinfo &lt;- scan(&quot;./NCAR_tinfill/METAinfo&quot;, skip = 1, what = list( &quot;a&quot;, 1, 1, 1))
+names(UStinfo) &lt;- c(&quot;station.id&quot;, &quot;elev&quot;, &quot;lon&quot;, &quot;lat&quot;)
+USpinfo &lt;- scan(&quot;./NCAR_pinfill/METAinfo&quot;, skip = 1, what = list( &quot;a&quot;, 1, 1, 1))
+names(USpinfo) &lt;- c(&quot;station.id&quot;, &quot;elev&quot;, &quot;lon&quot;, &quot;lat&quot;)
+rhsave(list = (&quot;UStinfo&quot;), file = &quot;/tmp/climate/UStinfo.RData&quot;)
+rhsave(list = (&quot;USpinfo&quot;), file = &quot;/tmp/climate/USpinfo.RData&quot;)
+rhls(&quot;/tmp/climate&quot;)
+</code></pre>
+
+<pre><code>  permission owner      group     size          modtime                       file
+1 drwxr-xr-x tongx supergroup        0 2014-06-27 22:11  /tmp/climate/NCAR_pinfill
+2 drwxrwxrwx tongx supergroup        0 2014-06-25 17:34  /tmp/climate/NCAR_tinfill
+3 -rw-r--r-- tongx supergroup 111.4 kb 2014-06-26 21:52 /tmp/climate/USpinfo.RData
+4 -rw-r--r-- tongx supergroup 79.61 kb 2014-06-26 21:52 /tmp/climate/UStinfo.RData
+</code></pre>
+
+<p><code>UStinfo</code> and <code>USpinfo</code> are two list objects, each has four elements which are station.id, elevation,
+latitude, and longitude respectively. Two <code>.RData</code> have been saved into HDFS for later use.</p>
+
+</div>
+
+
+<div class='tab-pane' id='r-objects-dividing-by-year'>
+<h3>R Objects: Dividing by year</h3>
+
+<p>The data needs to be converted to R objects. Since we will be doing repeated analyses on the data, 
+it is better to spend time converting them to R objects making subsequent computations faster, 
+rather than tokenizing strings and converting to R objects for every analysis. In the following,
+we are going to use maximum temperature as the example.</p>
+
+<p>A sample of the text file:</p>
+
+<pre><code>472209     42   16   11   34   61   83   69   46   82    6   20    6  111111111111
+472240     21   16   12   34  104   95   95   55  127   12   44   14  111111111111
+472314     28    9    5   35   86   80   59   66  137   10   30   28  111111111111
+...
+</code></pre>
+
+<p>The complete maximum temperature files based on regular station data have the names tmax.complete.Ynnn
+where nnn = 001, 002, ..., 103 and 001=1895 and 103=1997. Each separate data file consists of the maximum
+temperature for a single year. Each line of the file is data for one station according to the format: 
+station id, 12 maximum temperature ( Jan-DEC), 12 missing  value/infill codes (1=missing, 0=present) </p>
+
+<p>Our first <code>RHIPE</code> task would be how to convert the text files on HDFS to R objects. For our climate
+data, the first thing we can do is to create one data frame for each year since our text files are
+separated by year. </p>
+
+<pre><code class="r">map &lt;- expression({
+  y &lt;- do.call(&quot;rbind&quot;, lapply(map.values, function(r) {
+    row &lt;- strsplit(r, &quot; +&quot;)[[1]]
+    c(row[1], row[2:13], substring(row[14], 1:12, 1:12))
+  }))
+  file &lt;- Sys.getenv(&quot;mapred.input.file&quot;)
+  k &lt;- as.numeric(substr(unlist(strsplit(strsplit(file, &quot;/&quot;)[[1]][8], &quot;[.]&quot;))[3], 2, 4))
+  miss &lt;- as.data.frame(matrix(as.numeric(y[, (1:12) + 13]), ncol = 12))
+  tmp &lt;- as.data.frame(matrix(as.numeric(y[, (1:12) + 1]), ncol = 12))
+  name &lt;- y[, 1]
+  tmp &lt;- tmp/10
+  tmp[miss == 1] &lt;- NA
+  names(tmp) &lt;- c(
+    &quot;Jan&quot;, &quot;Feb&quot;, &quot;Mar&quot;, &quot;Apr&quot;, &quot;May&quot;, &quot;June&quot;, 
+    &quot;July&quot;, &quot;Aug&quot;, &quot;Sep&quot;, &quot;Oct&quot;, &quot;Nov&quot;, &quot;Dec&quot;
+  )
+  tmp &lt;- cbind(station.id = name, tmp, year = rep((k + 1894)))
+  UStmax &lt;- data.frame(
+    station.id = rep(tmp$station.id, 12),
+    elev       = rep(UStinfo$elev, 12),
+    lon        = rep(UStinfo$lon, 12),
+    lat        = rep(UStinfo$lat, 12),
+    year       = rep(tmp$year,12),
+    month      = rep(names(tmp)[2:13], each = dim(tmp)[1]),
+    tmax       = c(tmp[, 2], tmp[, 3], tmp[, 4], tmp[, 5], tmp[, 6], tmp[, 7], 
+                   tmp[, 8], tmp[, 9], tmp[, 10], tmp[, 11], tmp[, 12], tmp[, 13])
+  )
+  rhcollect(unique(tmp$year), UStmax)
+})
+mr &lt;- rhwatch(
+  map      = map,
+  shared   = c(&quot;/tmp/climate/UStinfo.RData&quot;),
+  setup    = expression(map = {load(&quot;UStinfo.RData&quot;)}),
+  input    = rhfmt(&quot;/tmp/climate/NCAR_tinfill/tmax&quot;, type = &quot;text&quot;),
+  output   = rhfmt(&quot;/tmp/climate/output/tmax.byyear&quot;, type = &quot;sequence&quot;),
+  mapred   = list( mapred.reduce.tasks = 100, rhipe_map_buff_size = 8125 ),
+  readback = FALSE
+)
+</code></pre>
+
+<p>A valid map-reduce job in <code>RHIPE</code> is consist of a map expression, an optional reduce expression, and a
+execution function <code>rhwatch()</code>. Let&#39;s run this entire code in R first. In R console you will see that
+job running information is keeping popping out, which will be helpful for you to have some idea 
+about the status of running job. </p>
+
+<pre><code>[Fri Jun 26 23:43:04 2014] Name:2014-06-26 23:43:01 Job: job_201406101143_0090  State: PREP Duration: 0.246
+URL: http://hadoop-01.rcac.purdue.edu:50030/jobdetails.jsp?jobid=job_201406101143_0090
+       pct numtasks pending running complete killed failed_attempts killed_attempts
+map      0      103     103       0        0      0               0               0
+reduce   0      100     100       0        0      0               0               0
+Waiting 5 seconds
+[Fri Jun 26 23:43:09 2014] Name:2014-06-26 23:43:01 Job: job_201406101143_0090  State: RUNNING Duration: 7.212
+URL: http://hadoop-01.rcac.purdue.edu:50030/jobdetails.jsp?jobid=job_201406101143_0090
+       pct numtasks pending running complete killed failed_attempts killed_attempts
+map      0      103       0     103        0      0               0               0
+reduce   0      100     100       0        0      0               0               0
+Waiting 5 seconds
+</code></pre>
+
+<p>There will be total 103 key/value pairs in the output files. In <code>RHIPE</code>, key/value pairs are R lists 
+with two elements, one for the key and one for the value. In this example, key is the year, value is 
+a data frame with the observations for 12 months over 8,125 stations for that year. <code>rhread()</code> function
+is used to read in key/value pairs on HDFS. We can specify the <code>type</code> to be <code>sequence</code>, <code>map</code>, or <code>text</code>, 
+it depends on what type of file it is. The default is <code>sequence</code> which is the type of key/value pairs 
+file on HDFS. We can also specify how many key/value pairs we want to read into R from HDFS by <code>max</code>
+argument.</p>
+
+<pre><code class="r">rst1 &lt;- rhread(&quot;/tmp/climate/output/tmax.byyear&quot;, max = 1)
+str(rst1)
+</code></pre>
+
+<pre><code>List of 1
+ $ :List of 2
+  ..$ : num 1913
+  ..$ :&#39;data.frame&#39;:    97500 obs. of  7 variables:
+  .. ..$ station.id: Factor w/ 8125 levels &quot;010148&quot;,&quot;010160&quot;,..: 1 2 3 4 5 6 7 8 9 10 ...
+  .. ..$ elev      : num [1:97500] 339 201 201 49 107 184 308 220 92 88 ...
+  .. ..$ lon       : num [1:97500] -86.2 -86 -85.9 -88.1 -86.5 ...
+  .. ..$ lat       : num [1:97500] 34.2 33 33 33.1 31.3 ...
+  .. ..$ year      : num [1:97500] 1913 1913 1913 1913 1913 ...
+  .. ..$ month     : Factor w/ 12 levels &quot;Apr&quot;,&quot;Aug&quot;,&quot;Dec&quot;,..: 5 5 5 5 5 5 5 5 5 5 ...
+  .. ..$ tmax      : num [1:97500] NA NA NA NA NA NA NA NA NA NA ...
+</code></pre>
+
+<p>Here we read in one key/value pair, key is 1913, value is a data frame with 97,500 rows, 7 columns.</p>
+
+<p>Now let&#39;s spend more time on the code.</p>
+
+<h4>The <code>map</code> expression</h4>
+
+<p>Map is an R expression that is evaluated by RHIPE during the map stage. For each task, RHIPE will 
+call this expression multiple times. The input and output of map function are both key/value pairs. 
+A key/value pair (KVP) is an abstract data type that includes a group of key identifiers and a set
+of associated values. In other words, the map function processes a key/value pair to generate a set
+of intermediate key/value pairs. So in our previous map function, we process the key/value pairs we
+got from the text file into new key/value pairs which every year is the key, and the corresponding
+value would be a data frame. The key/value pairs read in from input file will be saved as <code>map.keys</code> 
+and <code>map.values</code> respectively. <code>map.keys</code> and <code>map.values</code> are two lists which are consist of all 
+keys and all values that will be executed in one task at one moment respectively. In this example, 
+which the input file of a map-reduce job is a text file, all keys (indices) in map.keys will not have
+any meaning but will be unique, and all the corresponding values in map.values are each row of text
+file saved as a string.</p>
+
+<p>So in map expression, we split the one string of each row to individual maximum temperature 
+measurement, as well as the measurement status for each <code>map.values</code>. and then combined each row.
+The length of <code>map.keys</code> and <code>map.values</code> are 8,125 which is the number of row in each text file. 
+We will explain this with more details in later Execution function session. This makes sure that
+for each task, we have all rows for one year. <code>Sys.getenv(&quot;mapred.input.file&quot;)</code> here is how we get
+the name of the file is processed by mapper. This is necessary for our example since the only place
+keep the year information is the file name. After this, we assigned year to <code>k</code>, assigned <code>NA</code> to 
+all months with missing value. Finally we created a data frame <code>UStmax</code> including <code>station.id</code>, 
+<code>elev</code>, <code>lon</code>, <code>lat</code>, <code>year</code>, <code>month</code>, and <code>tmax</code>.</p>
+
+<p>Finally we collect a new key/value pair, which key is year and value is data frame <code>UStmax</code>, by 
+using <code>rhcollect()</code> function in RHIPE. The first argument of <code>rhcollect()</code> is the key, and the second
+argument is the value. Suppose we have 100 rows, and each row has 20 words, by using our map function, 
+we will be collecting 2,000 new key/value pairs, or we call them intermediate key/value pairs.</p>
+
+<h4>The <code>reduce</code> expression</h4>
+
+<p>In this example, we do not include any reduce expression. It is OK to skip a reduce step in a map-reduce
+job. What happens is after the map step, all intermediate key/value pairs will be first sorted based
+on key and then wrote onto HDFS.</p>
+
+<h4>Execution function</h4>
+
+<p>After the map and reduce expression, we are heading to the execution function of a map-reduce job in 
+<code>RHIPE</code>. <code>rhwatch()</code> is a call that packages the Map-reduce job which is sent to Hadoop. In <code>rhwatch()</code>
+function, we specify what the map and reduce expression of the map-reduce job is. We assign the map and 
+reduce expression to <code>map</code> and <code>reduce</code> argument in <code>rhwatch()</code> respectively. <code>Input</code> and <code>output</code>
+argument in <code>rhwatch()</code> function is used to specify the path on HDFS of input file and output file 
+respectively. <code>mapred</code> argument is a list that can be used to customize the <code>Hadoop</code> and <code>RHIPE</code> 
+options. Here we specify the <code>mapred.reduce.tasks</code> to be 100, so the number of reduce tasks will be 
+set to be 100. This number also is related to the number of output files, since each reduce task 
+will generate one piece of output file for the final output. <code>rhipe_map_buff_size</code> is set up to be
+8,125, this argument is useful when we want to control how many keys and values are in <code>map.keys</code>
+and <code>map.values</code> for one task if the type of input file are <code>text</code>. In later section, we will give 
+more details about this argument.</p>
+
+</div>
+
+
+<div class='tab-pane' id='r-objects-dividing-by-stationid'>
+<h3>R Objects: Dividing by station.id</h3>
+
+<p>If we are interested in applying time series data analysis on each station, it will be reasonable 
+to assume we want to have new key/value pairs such that the keys are <code>station.id</code>, and the values
+are corresponding data frame of all 1,236 observations for the station.</p>
+
+<pre><code class="r">map &lt;- expression({
+  lapply(seq_along(map.keys), function(r) {
+    lapply(1:dim(map.values[[r]]), function(x) {
+      key &lt;- as.character(map.values[[r]][x, 1])
+      value &lt;- map.values[[r]][x, -1]
+      rhcollect(key, value)
+    })
+  })
+})
+reduce &lt;- expression(
+  pre = {
+    combined &lt;- data.frame()
+  },
+  reduce = {
+    combined &lt;- rbind(combined, do.call(rbind, reduce.values))
+  },
+  post = { 
+    if(sum(!is.na(combined$tmax)) == 1236) {
+      rhcollect(reduce.key, combined)
+    }
+  }
+)
+z &lt;- rhwatch(
+  map      = map,
+  reduce   = reduce,
+  input    = rhfmt(&quot;/tmp/climate/output/tmax.byyear&quot;, type = &quot;sequence&quot;),
+  output   = rhfmt(&quot;/tmp/climate/output/tmax.bystation&quot;, type = &quot;sequence&quot;),
+  mapred   = list(mapred.reduce.tasks = 64),
+  readback = FALSE
+)
+</code></pre>
+
+<h4>The <code>map</code> expression</h4>
+
+<p>In the <code>map</code>, we iterate over all rows from each key/value pairs. For each row, we create <code>key</code> 
+object which is the station id, and <code>value</code> object which is the rest of the row, and then we
+collect one key/value pair for each row using <code>rhcollect()</code>. There are 103 key/value pairs in 
+the input file <code>/tmp/climate/output/tmax.byyear</code>, and each value has 97,500 rows. Totally, we
+will collect over 10 million key/value pairs in the map step.</p>
+
+<h4>The <code>reduce</code> expression</h4>
+
+<p>As we saw in the code, a reduce expression should like:</p>
+
+<pre><code class="r">reduce &lt;- expression(
+  pre = {
+    # initialize objects in which results will be stored
+  },
+  reduce = {
+    # take current batch of reduce.values and update the result
+  },
+  post = {
+    # emit output key-value pairs using collect(key, value)
+  }
+)
+</code></pre>
+
+<p>In RHIPE, <code>reduce</code> is an R expression that is evaluated by <code>RHIPE</code> during the reduce step, or it is
+a vector of expressions with names <code>pre</code>, <code>reduce</code>, and <code>post</code>. All key/value pairs that share same 
+key will be grouped together and processed to be applied reduce function. In reduce-pre session, we 
+initialize the objects in which results will be stored, here is an empty data frame, <code>combined</code>. 
+<code>reduce.key</code> is the shared key, and <code>reduce.values</code> is a list that includes all values corresponding
+to that unique <code>reduce.key</code>. In reduce-reduce session, we cumulative all <code>reduce.values</code>, here we 
+combined all rows by row for each station id. Finally in post session, we collect the final key/value
+pair not for every station, but only the stations that do not have missing observations.</p>
+
+<pre><code class="r">rst2 &lt;- rhread(&quot;/tmp/climate/output/tmax.bystation&quot;, max=10)
+str(rst2)
+</code></pre>
+
+<pre><code>List of 10
+ $ :List of 2
+  ..$ : chr &quot;080478&quot;
+  ..$ :&#39;data.frame&#39;:  1236 obs. of  6 variables:
+  .. ..$ elev : num [1:1236] 38 38 38 38 38 38 38 38 38 38 ...
+  .. ..$ lon  : num [1:1236] -81.8 -81.8 -81.8 -81.8 -81.8 ...
+  .. ..$ lat  : num [1:1236] 27.9 27.9 27.9 27.9 27.9 27.9 27.9 27.9 27.9 27.9 ...
+  .. ..$ year : num [1:1236] 1978 1978 1978 1978 1978 ...
+  .. ..$ month: Factor w/ 12 levels &quot;Apr&quot;,&quot;Aug&quot;,&quot;Dec&quot;,..: 10 2 3 11 12 7 5 9 8 12 ...
+  .. ..$ tmax : num [1:1236] 28.1 33.3 25.1 29.6 33.1 32.6 18.8 31.9 27.5 32.4 ...
+ $ :List of 2
+  ..$ : chr &quot;097847&quot;
+  ..$ :&#39;data.frame&#39;:  1236 obs. of  6 variables:
+  .. ..$ elev : num [1:1236] 14 14 14 14 14 14 14 14 14 14 ...
+  .. ..$ lon  : num [1:1236] -81.2 -81.2 -81.2 -81.2 -81.2 -81.2 -81.2 -81.2 -81.2 -81.2 ...
+  .. ..$ lat  : num [1:1236] 32.1 32.1 32.1 32.1 32.1 ...
+  .. ..$ year : num [1:1236] 1901 1901 1901 1901 1901 ...
+  .. ..$ month: Factor w/ 12 levels &quot;Apr&quot;,&quot;Aug&quot;,&quot;Dec&quot;,..: 1 7 10 4 5 2 8 12 6 9 ...
+  .. ..$ tmax : num [1:1236] 21.7 30.8 18.4 14.9 16.2 30.7 20.3 30 32.1 29.3 ...
+...
+</code></pre>
+
+<p>The result is exactly what we want. For each key/value pair, the key is the <code>station.id</code>, and the
+value is a data frame with 6 columns and 1,236 rows.</p>
+
+</div>
+
+
+<div class='tab-pane' id='subset-10-stations'>
+<h3>Subset: 10 Stations</h3>
+
+<p>For the demonstration purpose, we are going to only use 10 stations as the subset to demonstrate the
+rest of analysis.</p>
+
+<pre><code class="r">data &lt;- rhread(&quot;/tmp/climate/output/tmax.bystation&quot;, max=10)
+rhwrite(data, file=&quot;/tmp/climate/output/tmax.bystation.10&quot;)
+</code></pre>
+
+<pre><code>Wrote 1.2 MB,10 chunks, and 10 elements (100% complete)
+</code></pre>
+
+<p>The first question in our head now is where are these 10 stations? By using and <code>panel</code> in <code>lattice</code>
+library, this can be done easily.</p>
+
+<pre><code class="r">library(maps)
+library(lattice)
+us.map &lt;- map(&#39;state&#39;, plot = FALSE, fill = TRUE)
+lo &lt;- as.data.frame(
+  do.call(&quot;rbind&quot;, lapply(data, 
+    function(r){c(r[[2]]$lat[1], r[[2]]$lon[1])})
+  )
+)
+st &lt;- unlist(lapply(data, &quot;[[&quot;, 1))
+location &lt;- cbind(st, lo)
+names(location) &lt;- c(&quot;station.id&quot;, &quot;lat&quot;, &quot;lon&quot;)
+b &lt;- xyplot(lat ~ lon,
+  data  = location,
+  xlab  = list(label=&quot;Longitude&quot;),
+  ylab  = list(label=&quot;Latitude&quot;),
+  pch   = 16,
+  cex   = 1,
+  col   = &quot;red&quot;,
+  xlim  = c(-125, -66),
+  ylim  = c(24.5, 50), 
+  panel = function(...) {
+    panel.polygon(us.map$x,us.map$y)   
+    panel.xyplot(...)
+  }
+)
+print(b)
+</code></pre>
+
+<p><img src="./plots/spatial.png" alt="location of the 10 stations"></p>
+
+</div>
+
+
+<div class='tab-pane' id='time-series-of-each-station'>
+<h3>Time Series of each station</h3>
+
+<p>Now it is a good time to dig into the visualization of time series plot for each station. For each
+station(for we can say for each subset), we would like to create a time series plot which contains
+1236 monthly observations. In <code>RHIPE</code>, we can create multiple files of plot parallelly through 
+multiple tasks. Each task will create one ps file for each station, and then save the plotting
+files on HDFS. For this example, we do not need a reduce function, all job can be done in the map 
+function.</p>
+
+<pre><code class="r">map &lt;- expression({
+  lapply(seq_along(map.keys), function(r) {
+    tmp &lt;- map.values[[r]]
+    month &lt;- c(&quot;Jan&quot;,&quot;Feb&quot;,&quot;Mar&quot;,&quot;Apr&quot;,&quot;May&quot;,&quot;June&quot;,&quot;July&quot;,&quot;Aug&quot;, &quot;Sep&quot;, &quot;Oct&quot;, &quot;Nov&quot;, &quot;Dec&quot;)
+    tmp$month &lt;- factor(tmp$month, levels = month)
+    tmp &lt;- tmp[with(tmp, order(year, month)),]
+    tmp$factor &lt;- factor(rep(rep(paste(&quot;Period&quot;, 1:9), c(rep(144,8),84))), 
+      levels=paste(&quot;Period&quot;, c(9:1))
+    )
+    tmp$time &lt;- c(rep(0:143,8), 0:83)
+    trellis.device(postscript, 
+      file  = paste(&quot;./tmp/tmax.vs.time&quot;, map.keys[[r]], &quot;ps&quot;, sep=&quot;.&quot;), 
+      color = TRUE, 
+      paper = &quot;legal&quot;
+    )
+    b &lt;- xyplot( tmax ~ time | factor,
+      data   = tmp,
+      xlab   = list(label = &quot;Month&quot;, cex = 1.2),
+      ylab   = list(label = &quot;Maximum Temperature (degrees centigrade)&quot;, cex = 1.2),
+      main   = list(label = paste(&quot;Station &quot;, map.keys[[r]], sep=&quot;&quot;), cex=1.5),
+      type   = &quot;b&quot;,
+      pch    = 16,
+      cex    = 0.5,      
+      layout = c(1,9),
+      strip  = FALSE,
+      aspect = 0.06,
+      xlim   = c(0, 143),
+      scales = list(
+        y = list(relation = &#39;same&#39;, alternating = TRUE), 
+        x = list(at = seq(0, 143, by = 12), relation =&#39;same&#39;)
+      ),
+      panel  = function(...) {
+        panel.abline(
+          h     = seq(0,max(tmp$tmax),by=5), 
+          v     = seq(0,145,by=12), 
+          color = &quot;lightgrey&quot;, 
+          lty   = 3, 
+          lwd   = 0.5
+        )
+        panel.xyplot(...)
+      }
+    )
+    print(b)
+    dev.off()
+  })
+})
+z &lt;- rhwatch(
+  map       = map,
+  input     = &quot;/tmp/climate/output/tmax.bystation.10&quot;,
+  output    = &quot;/tmp/climate/output/graph/tmax.vs.time/&quot;,
+  setup = expression(
+    map = {library(lattice)}
+  ),
+  mapred    = list( 
+    mapred.reduce.tasks = 0, 
+    mapred.task.timeout = 0
+  ),
+  copyFiles = TRUE,
+  readback  = FALSE,
+)
+</code></pre>
+
+<p>In map function, we created a ps file named &#39;tmax.vs.time&#39; with station id saved under <code>/tmp/</code>. 
+Every ps file is created first on corresponding mapper node, then we have to specify the <code>copyFiles</code>
+argument in <code>rhwatch</code> function to copy the ps files which on different mapper nodes to the HDFS.</p>
+
+<pre><code class="r">rhls(&quot;/tmp/climate/output/graph/tmax.vs.time&quot;)
+</code></pre>
+
+<pre><code>   permission owner      group        size          modtime                                                file
+1  -rw-r--r-- tongx supergroup           0 2014-07-21 13:56     /tmp/climate/output/graph/tmax.vs.time/_SUCCESS
+2  drwxr-xr-x tongx supergroup           0 2014-07-21 13:56     /tmp/climate/output/graph/tmax.vs.time/_outputs
+3  -rw-r--r-- tongx supergroup    94 bytes 2014-07-21 13:56 /tmp/climate/output/graph/tmax.vs.time/part-m-00000
+4  -rw-r--r-- tongx supergroup    94 bytes 2014-07-21 13:56 /tmp/climate/output/graph/tmax.vs.time/part-m-00001
+5  -rw-r--r-- tongx supergroup    94 bytes 2014-07-21 13:56 /tmp/climate/output/graph/tmax.vs.time/part-m-00002
+6  -rw-r--r-- tongx supergroup    94 bytes 2014-07-21 13:56 /tmp/climate/output/graph/tmax.vs.time/part-m-00003
+7  -rw-r--r-- tongx supergroup    94 bytes 2014-07-21 13:56 /tmp/climate/output/graph/tmax.vs.time/part-m-00004
+8  -rw-r--r-- tongx supergroup    94 bytes 2014-07-21 13:56 /tmp/climate/output/graph/tmax.vs.time/part-m-00005
+9  -rw-r--r-- tongx supergroup    94 bytes 2014-07-21 13:56 /tmp/climate/output/graph/tmax.vs.time/part-m-00006
+10 -rw-r--r-- tongx supergroup    94 bytes 2014-07-21 13:56 /tmp/climate/output/graph/tmax.vs.time/part-m-00007
+11 -rw-r--r-- tongx supergroup    94 bytes 2014-07-21 13:56 /tmp/climate/output/graph/tmax.vs.time/part-m-00008
+12 -rw-r--r-- tongx supergroup    94 bytes 2014-07-21 13:56 /tmp/climate/output/graph/tmax.vs.time/part-m-00009
+</code></pre>
+
+<p>All &#39;part-m-...&#39; files are empty since we did not have real output content from the map-reduce job.
+Downloaded files are actually created ps files are copied into a sub-directory named <code>_outputs</code></p>
+
+<pre><code class="r">rhls(&quot;/tmp/climate/output/graph/tmax.vs.time/_outputs&quot;)
+</code></pre>
+
+<pre><code>   permission owner      group     size          modtime                                                                   file
+1  -rw-r--r-- tongx supergroup 64.92 kb 2014-07-21 13:56 /tmp/climate/output/graph/tmax.vs.time/_outputs/tmax.vs.time.030936.ps
+2  -rw-r--r-- tongx supergroup 64.88 kb 2014-07-21 13:56 /tmp/climate/output/graph/tmax.vs.time/_outputs/tmax.vs.time.035908.ps
+3  -rw-r--r-- tongx supergroup 64.92 kb 2014-07-21 13:56 /tmp/climate/output/graph/tmax.vs.time/_outputs/tmax.vs.time.080478.ps
+4  -rw-r--r-- tongx supergroup 66.41 kb 2014-07-21 13:56 /tmp/climate/output/graph/tmax.vs.time/_outputs/tmax.vs.time.097847.ps
+5  -rw-r--r-- tongx supergroup 66.39 kb 2014-07-21 13:56 /tmp/climate/output/graph/tmax.vs.time/_outputs/tmax.vs.time.160549.ps
+6  -rw-r--r-- tongx supergroup 64.42 kb 2014-07-21 13:56 /tmp/climate/output/graph/tmax.vs.time/_outputs/tmax.vs.time.176905.ps
+7  -rw-r--r-- tongx supergroup 64.72 kb 2014-07-21 13:56 /tmp/climate/output/graph/tmax.vs.time/_outputs/tmax.vs.time.221707.ps
+8  -rw-r--r-- tongx supergroup 64.72 kb 2014-07-21 13:56 /tmp/climate/output/graph/tmax.vs.time/_outputs/tmax.vs.time.285728.ps
+9  -rw-r--r-- tongx supergroup 66.43 kb 2014-07-21 13:56 /tmp/climate/output/graph/tmax.vs.time/_outputs/tmax.vs.time.390128.ps
+10 -rw-r--r-- tongx supergroup 65.39 kb 2014-07-21 13:56 /tmp/climate/output/graph/tmax.vs.time/_outputs/tmax.vs.time.472839.ps
+</code></pre>
+
+<p>Then we can copy the files from HDFS to local file system by using <code>rhget</code> function in <code>RHIPE</code>.</p>
+
+<pre><code class="r">rhget(&quot;/tmp/climate/output/graph/tmax.vs.time/_outputs/tmax.vs.time.030936.ps&quot;, &quot;~/&quot;)
+</code></pre>
+
+<p><img src="./plots/tmax.vs.time.030936.png" alt="time series of the station"></p>
+
+</div>
+
+
+<div class='tab-pane' id='distribution-of-temperature'>
+<h3>Distribution of Temperature</h3>
+
+<p>Distribution plot of the response, maximum temperature, is one of the important plot that we want 
+to illustrate. So we are going to plot the normal quantile plot conditional on month for each station.</p>
+
+<pre><code class="r">map &lt;- expression({
+  lapply(seq_along(map.values), function(r) {
+    tmp &lt;- map.values[[r]]
+    month &lt;- c(&quot;Jan&quot;,&quot;Feb&quot;,&quot;Mar&quot;,&quot;Apr&quot;,&quot;May&quot;,&quot;June&quot;,&quot;July&quot;,&quot;Aug&quot;, &quot;Sep&quot;, &quot;Oct&quot;, &quot;Nov&quot;, &quot;Dec&quot;)
+    tmp$month &lt;- factor(tmp$month, levels = month)
+    tmp &lt;- tmp[with(tmp, order(year, month)),]
+    trellis.device(postscript, 
+      file  = paste(&quot;./tmp/QQ.tmax.month&quot;, map.keys[[r]], &quot;ps&quot;, sep = &quot;.&quot;), 
+      color = TRUE, 
+      paper = &quot;legal&quot;
+    )  
+    a &lt;- qqmath(~ tmax | month,
+      data         = tmp,
+      distribution = qnorm,
+      aspect       = &quot;xy&quot;,
+      layout       = c(12,1),
+      pch          = 16,
+      cex          = 0.5, 
+      main         = list(label = paste(&quot;Station &quot;, map.keys[[r]], sep=&quot;&quot;), cex = 1.5),
+      xlab         = list(label = &quot;Unit normal quantile&quot;, cex = 1.2),
+      ylab         = list(label = &quot;Max Temperature(degrees centigrade)&quot;, cex = 1.2),
+      prepanel     = prepanel.qqmathline,
+      panel        = function(x, y,...) {
+        panel.grid()
+        panel.qqmathline(x, y = x)
+        panel.qqmath(x, y,...)
+      }
+      )
+      print(a)
+    dev.off()
+  })
+})
+z &lt;- rhwatch(
+  map       = map,
+  input     = &quot;/tmp/climate/output/tmax.bystation.10&quot;,
+  output    = &quot;/tmp/climate/output/graph/QQ.tmax.month&quot;,
+  setup = expression(
+    map = {library(lattice)}
+  ),
+  mapred    = list( 
+    mapred.reduce.tasks = 0, 
+    mapred.task.timeout = 0
+  ),
+  copyFiles = TRUE,
+  readback  = FALSE,
+)
+</code></pre>
+
+<p>We still need to use <code>rhget</code> function to copy the ps plots from HDFS to the local file system.</p>
+
+<pre><code class="r">rhget(&quot;/tmp/climate/output/graph/QQ.tmax.month/_outputs/QQ.tmax.month.472839.ps&quot;, &quot;~/&quot;)
+</code></pre>
+
+<p><img src="./plots/QQ.tmax.month.472839.png" alt="QQ plot of tmax conditional on month"></p>
+
+</div>
+
+
+<div class='tab-pane' id='modeling-and-diagnostics'>
+<h3>Modeling and Diagnostics</h3>
+
+<p>Seasonal-Trend decomposition procedure based on Loess (STL)[Cleveland et al, 1990] is a decomposition
+method for time series data analysis. Each observation in the time series is decomposed into three 
+parts: the trend component, the seasonal component, and the remainder component. The long term change
+in the time series is captured by the trend component. A cyclical pattern is reflected in the seasonal
+component. The residuals, the remaining variation, are the remainder component.</p>
+
+<p>STL+ is an advanced version of original STL procedure, which is introduced by Ryan Hafen. STL+ added 
+several new feature such as capability to handle missing value, local quadratic fitting for trend 
+and seasonal components, and adding multiple frequency components, and so forth. In R the package 
+for STL+ is called <code>stl2</code> which can be installed as following:</p>
+
+<pre><code class="r">library(devtools)
+install_github(&quot;stl2&quot;, &quot;hafen&quot;)
+</code></pre>
+
+<h4>Experiment 1</h4>
+
+<p>The first STL+ model we are going to build is setting parameters as following:
+<code>t.window</code>= 495, <code>t.degree</code>= 2, <code>s.window</code>= 77, <code>s.degree</code>= 1, <code>inner</code>= 10, <code>outer</code>= 0. So we plan 
+to get local linear fit for the seasonal component and local quadratic fit for the trend component.
+The fitting span for trend component is about 40% of all observations, and span for seasonal component
+is about 75% of all yearly cycles.</p>
+
+<pre><code class="r">map &lt;- expression({
+  lapply(seq_along(map.values), function(r) {
+    tmp &lt;- map.values[[r]]
+    month &lt;- c(&quot;Jan&quot;,&quot;Feb&quot;,&quot;Mar&quot;,&quot;Apr&quot;,&quot;May&quot;,&quot;June&quot;,&quot;July&quot;,&quot;Aug&quot;, &quot;Sep&quot;, &quot;Oct&quot;, &quot;Nov&quot;, &quot;Dec&quot;)
+    tmp$month &lt;- factor(tmp$month, levels = month)
+    tmp &lt;- tmp[order(tmp$year, tmp$month),]
+    tmp$factor &lt;- factor(
+      rep(rep(paste(&quot;Period&quot;, 1:9), c(rep(144,8),84))), 
+      levels=paste(&quot;Period&quot;, c(9:1))
+    )
+    tmp$time &lt;- c(1:1236)
+    tmp$time2 &lt;- c(rep(0:143,8), 0:83)
+    ylab &lt;- &quot;Maximum Temperature (degrees centigrade)&quot;
+    stl.fit &lt;- stl2(
+      x = tmp$tmax, 
+      t = tmp$time, 
+      n.p = 12, 
+      s.window = 77, 
+      s.degree = 1, 
+      t.window = 495, 
+      t.degree = 2, 
+      inner = 10, 
+      outer = 0
+    )$data
+    stl.fit &lt;- cbind(tmp, stl.fit)
+    trellis.device(postscript, 
+      file  = paste(&quot;./tmp/stl.1.strend+seasonal&quot;, map.keys[[r]], &quot;ps&quot;, sep = &quot;.&quot;), 
+      color = TRUE, 
+      paper = &quot;legal&quot;
+    )  
+    b &lt;- xyplot( raw ~ time2 | factor,
+      data = stl.fit,
+      xlab = list(label = &quot;Month&quot;, cex = 1.2),
+      ylab = list(label = ylab, cex = 1.2),
+      main = list(label = paste(&quot;Station&quot;, map.keys[[r]], sep = &quot; &quot;), cex = 1.5),
+      layout = c(1,9),
+            aspect= 0.06,
+            strip = FALSE,
+      xlim = c(0, 143),
+      scales = list(
+        y = list(relation = &#39;same&#39;, tick.number = 4, alternating = TRUE), 
+        x = list(at = seq(0, 143, by = 12), relation = &#39;same&#39;)
+      ),
+      panel = function(x, y, subscripts,...) {
+        panel.abline(v = seq(0,145, by = 12), color = &quot;lightgrey&quot;, lty = 3, lwd = 0.5)
+        panel.xyplot(
+          x = x, 
+          y = y, 
+          type = &quot;p&quot;, 
+          col = &quot;#0080ff&quot;, 
+          pch = 16, 
+          cex = 0.5, ...
+        )
+                panel.xyplot(
+          x = stl.fit[subscripts,]$time2, 
+          y = (stl.fit[subscripts,]$trend+stl.fit[subscripts,]$seasonal), 
+          type = &quot;l&quot;, 
+          col = &quot;#ff00ff&quot;, 
+          lwd=1, ...
+        )            
+      }
+    )
+    print(b)
+    dev.off()
+  })
+})
+z &lt;- rhwatch(
+  map       = map,
+  input     = &quot;/tmp/climate/output/tmax.bystation.10&quot;,
+  output    = &quot;/tmp/climate/output/graph/stl.1.trend+seasonal&quot;,
+  setup = expression(
+    map = {
+      library(lattice)
+      library(yaImpute, lib.loc = lib.loc)
+      library(stl2, lib.loc = lib.loc)
+    }
+  ),
+  mapred    = list( 
+    mapred.reduce.tasks = 0, 
+    mapred.task.timeout = 0
+  ),
+  copyFiles = TRUE,
+  readback  = FALSE,
+)
+</code></pre>
+
+<p>Then we can copy the files from HDFS to local file system by using <code>rhget</code> function in RHIPE.</p>
+
+<pre><code class="r">rhget(&quot;/tmp/climate/output/graph/stl.1.trend+seasonal/_outputs/stl.1.strend+seasonal.030936.ps&quot;, &quot;~/&quot;)
+</code></pre>
+
+<p>In the time series plot, the trend component plus seasonal component of maximum temperature is 
+plotting against month index. The whole time series is chunked into 9 periods. Each of the first
+8 periods has 144 monthly observations, the last period has 84 monthly observations. The raw 
+observations are drawn with blue points, and the seasonal component plus trend component was 
+drawn with purple curve.</p>
+
+<p><img src="./plots/stl.1.strend+seasonal.030936.png" alt="Trend and seasonal"></p>
+
+<h4>Experiment 2</h4>
+
+</div>
+
+
+<div class='tab-pane' id='tunning-parameter'>
+<h3>Tunning Parameter</h3>
+
+</div>
+
+   
+   <ul class="pager">
+      <li><a href="#" id="previous">&larr; Previous</a></li> 
+      <li><a href="#" id="next">Next &rarr;</a></li> 
+   </ul>
+</div>
+
+
+</div>
+</div>
+
+<hr>
+
+<div class="footer">
+   <p>&copy; , 2014</p>
+</div>
+</div> <!-- /container -->
+
+<script src="assets/jquery/jquery.js"></script>
+<script type='text/javascript' src='assets/custom/custom.js'></script>
+<script src="assets/bootstrap/js/bootstrap.js"></script>
+<script src="assets/custom/jquery.ba-hashchange.min.js"></script>
+<script src="assets/custom/nav.js"></script>
+
+</body>
+</html>

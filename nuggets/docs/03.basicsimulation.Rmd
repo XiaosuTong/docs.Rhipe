@@ -1,0 +1,116 @@
+## Basic Simulation with Same Parameters ##
+
+### Problem ###
+
+We start off with basic simulation with Rhipe. Our goal is to generate $N(0,1)$ variables. Suppose we want to generate $N$ random numbers and $N$ is very large.
+
+### Simple R version ###
+
+The simple R code for simulation is 
+
+```{r eval=FALSE, tidy=FALSE}
+N<-1000.
+x<-rnorm(N)
+
+```
+The output will look like:( we are showing first 6 elements )
+```
+> head(x)
+[1]  0.32987901 -0.28096045 -0.35665524  1.50459348 -1.77322751  0.02927208
+> 
+```
+
+Also you will see this error message if $N$ is very large.
+```
+Error in rnorm(N) : invalid arguments
+In addition: Warning message:
+In rnorm(N) : NAs introduced by coercion
+
+```
+
+### RHIPE version ###
+
+The entire code of RHIPE for simulation is:
+
+```{r eval=FALSE, tidy=FALSE}
+account <- "chakrav0"
+N <- 2^20
+R <- 2^10
+
+##Generating data
+map1 <- expression({
+  lapply(seq_along(map.keys), function(r){
+  	n <- N/R 
+		value <- rnorm(n)
+		rhcollect(r, value)
+		rm(value)
+	})
+})
+reduce1 <- expression(
+  pre = {
+    value <- numeric(0)
+  },
+  reduce = {
+    value = c(value,unlist(reduce.values))
+  },
+  post = {
+    rhcollect(1, value)
+  }
+)
+job1 <- rhwatch(
+	map = map1,
+  reduce = reduce1,
+	input = c(R, 20),
+	output = rhfmt(file.path("/ln", account, "sim2", "data"), type="sequence"),
+	jobname = "Generating data",
+	readback = FALSE,
+	parameters = list(N = N, R = R),
+	noeval = TRUE
+)
+ex = rhex(job1, async=FALSE)
+
+##read result from HDFS
+rst <- rhread(file.path("/ln", account, "sim2", "data"))
+rst
+```
+
+The mapreduce job in RHIPE is consist of a `map` expression, an optional `reduce` expression, and a execution funtion 
+`rhwatch()`.
+
+Let us look at the code carefully. First we decare the number of random variables $N$ we are going to simulate and the number of nodes $R$ in which we are going divide the simulation. We declare these variables outside any map or reduce expression.
+
+Now let us look at the map expression. The map keys associated with this map expression are $1$ to $R$. For each of these keys we simulate $n=N/R$ number of observations. These $n$ simulations are values associated with the keys. So we have $R$ key-value pairs for the map expression.
+
+Actually we can run the sumulation with just this map expression,
+
+```{r eval=FALSE, tidy=FALSE}
+account <- "chakrav0"
+N <- 100
+R <- 10
+
+##Generating data
+map1 <- expression({
+  lapply(seq_along(map.keys), function(r){
+  	n <- N/R 
+		value <- rnorm(n)
+		rhcollect(r, value)
+		rm(value)
+	})
+})
+job1 <- rhwatch(
+	map = map1,
+  input = c(R, 20),
+	output = rhfmt(file.path("/ln", account, "sim2", "data"), type="sequence"),
+	jobname = "Generating data",
+	readback = FALSE,
+	parameters = list(N = N, R = R),
+	noeval = TRUE
+)
+ex = rhex(job1, async=FALSE)
+
+##read result from HDFS
+rst <- rhread(file.path("/ln", account, "sim2", "data"))
+rst
+```
+
+The output of this code will be a collection of $R$ lists, each list will have a key
