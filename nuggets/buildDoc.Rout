@@ -1,678 +1,0 @@
-
-R version 3.0.2 (2013-09-25) -- "Frisbee Sailing"
-Copyright (C) 2013 The R Foundation for Statistical Computing
-Platform: x86_64-pc-linux-gnu (64-bit)
-
-R is free software and comes with ABSOLUTELY NO WARRANTY.
-You are welcome to redistribute it under certain conditions.
-Type 'license()' or 'licence()' for distribution details.
-
-  Natural language support but running in an English locale
-
-R is a collaborative project with many contributors.
-Type 'contributors()' for more information and
-'citation()' on how to cite R or R packages in publications.
-
-Type 'demo()' for some demos, 'help()' for on-line help, or
-'help.start()' for an HTML browser interface to help.
-Type 'q()' to quit R.
-
-[Previously saved workspace restored]
-
-> 
-> ## install packages required to build the docs
-> #install.packages("devtools")
-> #library(devtools)
-> #install_github("staticdocs", "hadley")
-> #install_github("buildDocs", "hafen")
-> 
-> 
-> ## load the pacakge
-> library(buildDocs)
-Loading required package: whisker
-Loading required package: markdown
-Loading required package: knitr
-Loading required package: digest
-Loading required package: tools
-Loading required package: devtools
-
-Attaching package: ‘devtools’
-
-The following objects are masked from ‘package:utils’:
-
-    ?, help
-
-The following object is masked from ‘package:base’:
-
-    system.file
-
-> 
-> 
-> ## function to build the docs
-> #   assuming your working directory is 
-> #   doc.RHIPE/how-to-nuggets/
-> buildDocs(
-+    docsLoc       = "./docs",
-+    outLoc        = "./",
-+    copyrightText = NULL,
-+    # pageList      = c("01.intro.Rmd", "02.wordcount.Rmd"),
-+    # navPill       = packageNavPill("https://github.com/user/project"),
-+    # editHref      = "https://github.com/user/project/edit/gh-pages/docs/",
-+    knit          = TRUE,
-+    purl          = FALSE
-+ )
-  |                                                                         |                                                                 |   0%  |                                                                         |......................                                           |  33%
-  ordinary text without R code
-
-  |                                                                         |...........................................                      |  67%
-label: unnamed-chunk-1 (with options) 
-List of 1
- $ eval: logi FALSE
-
-  |                                                                         |.................................................................| 100%
-  ordinary text without R code
-
-
-  |                                                                         |                                                                 |   0%  |                                                                         |.....                                                            |   8%
-  ordinary text without R code
-
-  |                                                                         |..........                                                       |  15%
-label: unnamed-chunk-1 (with options) 
-List of 2
- $ eval: logi FALSE
- $ tidy: logi FALSE
-
-  |                                                                         |...............                                                  |  23%
-  ordinary text without R code
-
-  |                                                                         |....................                                             |  31%
-label: unnamed-chunk-2 (with options) 
-List of 2
- $ eval: logi FALSE
- $ tidy: logi FALSE
-
-  |                                                                         |.........................                                        |  38%
-  ordinary text without R code
-
-  |                                                                         |..............................                                   |  46%
-label: unnamed-chunk-3 (with options) 
-List of 2
- $ eval: logi FALSE
- $ tidy: logi FALSE
-
-  |                                                                         |...................................                              |  54%
-  ordinary text without R code
-
-  |                                                                         |........................................                         |  62%
-label: unnamed-chunk-4 (with options) 
-List of 2
- $ eval: logi FALSE
- $ tidy: logi FALSE
-
-  |                                                                         |.............................................                    |  69%
-  ordinary text without R code
-
-  |                                                                         |..................................................               |  77%
-label: unnamed-chunk-5 (with options) 
-List of 2
- $ eval: logi FALSE
- $ tidy: logi FALSE
-
-  |                                                                         |.......................................................          |  85%
-  ordinary text without R code
-
-  |                                                                         |............................................................     |  92%
-label: unnamed-chunk-6 (with options) 
-List of 2
- $ eval: logi FALSE
- $ tidy: logi FALSE
-
-  |                                                                         |.................................................................| 100%
-  ordinary text without R code
-
-
-  |                                                                         |                                                                 |   0%  |                                                                         |.............                                                    |  20%
-  ordinary text without R code
-
-  |                                                                         |..........................                                       |  40%
-label: unnamed-chunk-1 (with options) 
-List of 2
- $ eval: logi FALSE
- $ tidy: logi FALSE
-
-  |                                                                         |.......................................                          |  60%
-  ordinary text without R code
-
-  |                                                                         |....................................................             |  80%
-label: unnamed-chunk-2 (with options) 
-List of 2
- $ eval: logi FALSE
- $ tidy: logi FALSE
-
-  |                                                                         |.................................................................| 100%
-  ordinary text without R code
-
-
-  |                                                                         |                                                                 |   0%  |                                                                         |......................                                           |  33%
-  ordinary text without R code
-
-  |                                                                         |...........................................                      |  67%
-label: unnamed-chunk-1 (with options) 
-List of 2
- $ eval: logi FALSE
- $ tidy: logi FALSE
-
-  |                                                                         |.................................................................| 100%
-  ordinary text without R code
-
-
-  |                                                                         |                                                                 |   0%  |                                                                         |.......                                                          |  11%
-  ordinary text without R code
-
-  |                                                                         |..............                                                   |  22%
-label: unnamed-chunk-1 (with options) 
-List of 2
- $ eval: logi FALSE
- $ tidy: logi FALSE
-
-  |                                                                         |......................                                           |  33%
-  ordinary text without R code
-
-  |                                                                         |.............................                                    |  44%
-label: unnamed-chunk-2 (with options) 
-List of 2
- $ eval: logi FALSE
- $ tidy: logi FALSE
-
-  |                                                                         |....................................                             |  56%
-  ordinary text without R code
-
-  |                                                                         |...........................................                      |  67%
-label: unnamed-chunk-3 (with options) 
-List of 2
- $ eval: logi FALSE
- $ tidy: logi FALSE
-
-  |                                                                         |...................................................              |  78%
-  ordinary text without R code
-
-  |                                                                         |..........................................................       |  89%
-label: unnamed-chunk-4 (with options) 
-List of 1
- $ echo: logi FALSE
-
-  |                                                                         |.................................................................| 100%
-  ordinary text without R code
-
-
-  |                                                                         |                                                                 |   0%  |                                                                         |......................                                           |  33%
-  ordinary text without R code
-
-  |                                                                         |...........................................                      |  67%
-label: createtable (with options) 
-List of 2
- $ results: chr "asis"
- $ echo   : logi FALSE
-
-  |                                                                         |.................................................................| 100%
-  ordinary text without R code
-
-
-  |                                                                         |                                                                 |   0%  |                                                                         |....                                                             |   6%
-  ordinary text without R code
-
-  |                                                                         |........                                                         |  12%
-label: unnamed-chunk-1 (with options) 
-List of 2
- $ eval: logi FALSE
- $ tidy: logi FALSE
-
-  |                                                                         |...........                                                      |  18%
-  ordinary text without R code
-
-  |                                                                         |...............                                                  |  24%
-label: unnamed-chunk-2 (with options) 
-List of 2
- $ eval: logi FALSE
- $ tidy: logi FALSE
-
-  |                                                                         |...................                                              |  29%
-  ordinary text without R code
-
-  |                                                                         |.......................                                          |  35%
-label: unnamed-chunk-3 (with options) 
-List of 2
- $ eval: logi FALSE
- $ tidy: logi FALSE
-
-  |                                                                         |...........................                                      |  41%
-  ordinary text without R code
-
-  |                                                                         |...............................                                  |  47%
-label: unnamed-chunk-4 (with options) 
-List of 2
- $ eval: logi FALSE
- $ tidy: logi FALSE
-
-  |                                                                         |..................................                               |  53%
-  ordinary text without R code
-
-  |                                                                         |......................................                           |  59%
-label: unnamed-chunk-5 (with options) 
-List of 2
- $ eval: logi FALSE
- $ tidy: logi FALSE
-
-  |                                                                         |..........................................                       |  65%
-  ordinary text without R code
-
-  |                                                                         |..............................................                   |  71%
-label: unnamed-chunk-6 (with options) 
-List of 2
- $ eval: logi FALSE
- $ tidy: logi FALSE
-
-  |                                                                         |..................................................               |  76%
-  ordinary text without R code
-
-  |                                                                         |......................................................           |  82%
-label: unnamed-chunk-7 (with options) 
-List of 2
- $ eval: logi FALSE
- $ tidy: logi FALSE
-
-  |                                                                         |.........................................................        |  88%
-  ordinary text without R code
-
-  |                                                                         |.............................................................    |  94%
-label: unnamed-chunk-8 (with options) 
-List of 2
- $ eval: logi FALSE
- $ tidy: logi FALSE
-
-  |                                                                         |.................................................................| 100%
-  ordinary text without R code
-
-
-  |                                                                         |                                                                 |   0%  |                                                                         |.......                                                          |  11%
-  ordinary text without R code
-
-  |                                                                         |..............                                                   |  22%
-label: unnamed-chunk-1 (with options) 
-List of 2
- $ eval: logi FALSE
- $ tidy: logi FALSE
-
-  |                                                                         |......................                                           |  33%
-  ordinary text without R code
-
-  |                                                                         |.............................                                    |  44%
-label: unnamed-chunk-2 (with options) 
-List of 2
- $ eval: logi FALSE
- $ tidy: logi FALSE
-
-  |                                                                         |....................................                             |  56%
-  ordinary text without R code
-
-  |                                                                         |...........................................                      |  67%
-label: unnamed-chunk-3 (with options) 
-List of 2
- $ eval: logi FALSE
- $ tidy: logi FALSE
-
-  |                                                                         |...................................................              |  78%
-  ordinary text without R code
-
-  |                                                                         |..........................................................       |  89%
-label: unnamed-chunk-4 (with options) 
-List of 2
- $ eval: logi FALSE
- $ tidy: logi FALSE
-
-  |                                                                         |.................................................................| 100%
-  ordinary text without R code
-
-
-  |                                                                         |                                                                 |   0%  |                                                                         |....                                                             |   6%
-  ordinary text without R code
-
-  |                                                                         |........                                                         |  12%
-label: unnamed-chunk-1 (with options) 
-List of 2
- $ eval: logi FALSE
- $ tidy: logi FALSE
-
-  |                                                                         |...........                                                      |  18%
-  ordinary text without R code
-
-  |                                                                         |...............                                                  |  24%
-label: unnamed-chunk-2 (with options) 
-List of 2
- $ eval: logi FALSE
- $ tidy: logi FALSE
-
-  |                                                                         |...................                                              |  29%
-  ordinary text without R code
-
-  |                                                                         |.......................                                          |  35%
-label: unnamed-chunk-3 (with options) 
-List of 2
- $ eval: logi FALSE
- $ tidy: logi FALSE
-
-  |                                                                         |...........................                                      |  41%
-  ordinary text without R code
-
-  |                                                                         |...............................                                  |  47%
-label: unnamed-chunk-4 (with options) 
-List of 2
- $ eval: logi FALSE
- $ tidy: logi FALSE
-
-  |                                                                         |..................................                               |  53%
-  ordinary text without R code
-
-  |                                                                         |......................................                           |  59%
-label: unnamed-chunk-5 (with options) 
-List of 2
- $ eval: logi FALSE
- $ tidy: logi FALSE
-
-  |                                                                         |..........................................                       |  65%
-  ordinary text without R code
-
-  |                                                                         |..............................................                   |  71%
-label: unnamed-chunk-6 (with options) 
-List of 2
- $ eval: logi FALSE
- $ tidy: logi FALSE
-
-  |                                                                         |..................................................               |  76%
-  ordinary text without R code
-
-  |                                                                         |......................................................           |  82%
-label: unnamed-chunk-7 (with options) 
-List of 2
- $ eval: logi FALSE
- $ tidy: logi FALSE
-
-  |                                                                         |.........................................................        |  88%
-  ordinary text without R code
-
-  |                                                                         |.............................................................    |  94%
-label: unnamed-chunk-8 (with options) 
-List of 2
- $ eval: logi FALSE
- $ tidy: logi FALSE
-
-  |                                                                         |.................................................................| 100%
-  ordinary text without R code
-
-
-  |                                                                         |                                                                 |   0%  |                                                                         |.......                                                          |  11%
-  ordinary text without R code
-
-  |                                                                         |..............                                                   |  22%
-label: unnamed-chunk-1 (with options) 
-List of 2
- $ eval: logi FALSE
- $ tidy: logi FALSE
-
-  |                                                                         |......................                                           |  33%
-  ordinary text without R code
-
-  |                                                                         |.............................                                    |  44%
-label: unnamed-chunk-2 (with options) 
-List of 2
- $ eval: logi FALSE
- $ tidy: logi FALSE
-
-  |                                                                         |....................................                             |  56%
-  ordinary text without R code
-
-  |                                                                         |...........................................                      |  67%
-label: unnamed-chunk-3 (with options) 
-List of 2
- $ eval: logi FALSE
- $ tidy: logi FALSE
-
-  |                                                                         |...................................................              |  78%
-  ordinary text without R code
-
-  |                                                                         |..........................................................       |  89%
-label: unnamed-chunk-4 (with options) 
-List of 2
- $ eval: logi FALSE
- $ tidy: logi FALSE
-
-  |                                                                         |.................................................................| 100%
-  ordinary text without R code
-
-
-  |                                                                         |                                                                 |   0%  |                                                                         |.                                                                |   2%
-  ordinary text without R code
-
-  |                                                                         |...                                                              |   4%
-label: unnamed-chunk-1 (with options) 
-List of 1
- $ eval: logi FALSE
-
-  |                                                                         |....                                                             |   6%
-  ordinary text without R code
-
-  |                                                                         |.....                                                            |   8%
-label: unnamed-chunk-2 (with options) 
-List of 1
- $ eval: logi FALSE
-
-  |                                                                         |......                                                           |  10%
-  ordinary text without R code
-
-  |                                                                         |........                                                         |  12%
-label: unnamed-chunk-3 (with options) 
-List of 1
- $ eval: logi FALSE
-
-  |                                                                         |.........                                                        |  14%
-  ordinary text without R code
-
-  |                                                                         |..........                                                       |  16%
-label: unnamed-chunk-4 (with options) 
-List of 2
- $ eval: logi FALSE
- $ tidy: logi FALSE
-
-  |                                                                         |...........                                                      |  18%
-  ordinary text without R code
-
-  |                                                                         |.............                                                    |  20%
-label: unnamed-chunk-5 (with options) 
-List of 1
- $ eval: logi FALSE
-
-  |                                                                         |..............                                                   |  22%
-  ordinary text without R code
-
-  |                                                                         |...............                                                  |  24%
-label: unnamed-chunk-6 (with options) 
-List of 1
- $ eval: logi FALSE
-
-  |                                                                         |.................                                                |  25%
-  ordinary text without R code
-
-  |                                                                         |..................                                               |  27%
-label: unnamed-chunk-7 (with options) 
-List of 1
- $ eval: logi FALSE
-
-  |                                                                         |...................                                              |  29%
-  ordinary text without R code
-
-  |                                                                         |....................                                             |  31%
-label: unnamed-chunk-8 (with options) 
-List of 1
- $ eval: logi FALSE
-
-  |                                                                         |......................                                           |  33%
-  ordinary text without R code
-
-  |                                                                         |.......................                                          |  35%
-label: unnamed-chunk-9 (with options) 
-List of 2
- $ eval: logi FALSE
- $ tidy: logi FALSE
-
-  |                                                                         |........................                                         |  37%
-  ordinary text without R code
-
-  |                                                                         |.........................                                        |  39%
-label: unnamed-chunk-10 (with options) 
-List of 2
- $ eval: logi FALSE
- $ tidy: logi FALSE
-
-  |                                                                         |...........................                                      |  41%
-  ordinary text without R code
-
-  |                                                                         |............................                                     |  43%
-label: unnamed-chunk-11 (with options) 
-List of 1
- $ eval: logi FALSE
-
-  |                                                                         |.............................                                    |  45%
-  ordinary text without R code
-
-  |                                                                         |...............................                                  |  47%
-label: unnamed-chunk-12 (with options) 
-List of 2
- $ eval: logi FALSE
- $ tidy: logi FALSE
-
-  |                                                                         |................................                                 |  49%
-  ordinary text without R code
-
-  |                                                                         |.................................                                |  51%
-label: unnamed-chunk-13 (with options) 
-List of 2
- $ eval: logi FALSE
- $ tidy: logi FALSE
-
-  |                                                                         |..................................                               |  53%
-  ordinary text without R code
-
-  |                                                                         |....................................                             |  55%
-label: unnamed-chunk-14 (with options) 
-List of 2
- $ eval: logi FALSE
- $ tidy: logi FALSE
-
-  |                                                                         |.....................................                            |  57%
-  ordinary text without R code
-
-  |                                                                         |......................................                           |  59%
-label: unnamed-chunk-15 (with options) 
-List of 2
- $ eval: logi FALSE
- $ tidy: logi FALSE
-
-  |                                                                         |........................................                         |  61%
-  ordinary text without R code
-
-  |                                                                         |.........................................                        |  63%
-label: unnamed-chunk-16 (with options) 
-List of 1
- $ eval: logi FALSE
-
-  |                                                                         |..........................................                       |  65%
-  ordinary text without R code
-
-  |                                                                         |...........................................                      |  67%
-label: unnamed-chunk-17 (with options) 
-List of 1
- $ eval: logi FALSE
-
-  |                                                                         |.............................................                    |  69%
-  ordinary text without R code
-
-  |                                                                         |..............................................                   |  71%
-label: unnamed-chunk-18 (with options) 
-List of 1
- $ eval: logi FALSE
-
-  |                                                                         |...............................................                  |  73%
-  ordinary text without R code
-
-  |                                                                         |................................................                 |  75%
-label: unnamed-chunk-19 (with options) 
-List of 2
- $ eval: logi FALSE
- $ tidy: logi FALSE
-
-  |                                                                         |..................................................               |  76%
-  ordinary text without R code
-
-  |                                                                         |...................................................              |  78%
-label: unnamed-chunk-20 (with options) 
-List of 2
- $ eval: logi FALSE
- $ tidy: logi FALSE
-
-  |                                                                         |....................................................             |  80%
-  ordinary text without R code
-
-  |                                                                         |......................................................           |  82%
-label: unnamed-chunk-21 (with options) 
-List of 2
- $ eval: logi FALSE
- $ tidy: logi FALSE
-
-  |                                                                         |.......................................................          |  84%
-  ordinary text without R code
-
-  |                                                                         |........................................................         |  86%
-label: unnamed-chunk-22 (with options) 
-List of 2
- $ eval: logi FALSE
- $ tidy: logi FALSE
-
-  |                                                                         |.........................................................        |  88%
-  ordinary text without R code
-
-  |                                                                         |...........................................................      |  90%
-label: unnamed-chunk-23 (with options) 
-List of 1
- $ eval: logi FALSE
-
-  |                                                                         |............................................................     |  92%
-  ordinary text without R code
-
-  |                                                                         |.............................................................    |  94%
-label: unnamed-chunk-24 (with options) 
-List of 1
- $ eval: logi FALSE
-
-  |                                                                         |..............................................................   |  96%
-  ordinary text without R code
-
-  |                                                                         |................................................................ |  98%
-label: unnamed-chunk-25 (with options) 
-List of 1
- $ eval: logi FALSE
-
-  |                                                                         |.................................................................| 100%
-  ordinary text without R code
-
-
-copying bootstrap
-Warning messages:
-1: In readLines(.file) :
-  incomplete final line found on './docs/02.simpleexample.Rmd'
-2: In readLines(.file) :
-  incomplete final line found on './docs/10.transformtext.Rmd'
-> 
-> 
-> proc.time()
-   user  system elapsed 
-  1.442   0.107   2.289 
