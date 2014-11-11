@@ -6,12 +6,12 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="description" content="">
     <meta name="author" content="">
-
-    <link href="assets/bootstrap/css/bootstrap.css" rel="stylesheet">
+    
+    <link href="assets/bootstrap/css/bootstrap.min.css" rel="stylesheet">
     <link href="assets/custom/custom.css" rel="stylesheet">
     <!-- font-awesome -->
     <link href="assets/font-awesome/css/font-awesome.min.css" rel="stylesheet">
-
+    
     <!-- prism -->
     <link href="assets/prism/prism.css" rel="stylesheet">
     <link href="assets/prism/prism.r.css" rel="stylesheet">
@@ -35,6 +35,7 @@
     <link href='http://fonts.googleapis.com/css?family=Lato' rel='stylesheet' type='text/css'>
     <!-- <link href='http://fonts.googleapis.com/css?family=Lustria' rel='stylesheet' type='text/css'> -->
     <link href='http://fonts.googleapis.com/css?family=Bitter' rel='stylesheet' type='text/css'>
+    <link href='http://fonts.googleapis.com/css?family=Raleway:300' rel='stylesheet' type='text/css'>
     
 
     <!-- Fav and touch icons -->
@@ -53,6 +54,9 @@
         <ul class="nav nav-pills pull-right">
            <li class=''><a href='index.html'>Docs</a></li><li class='active'><a href='functionref.html'>Function Ref</a></li><li><a href='https://github.com/tesseradata/RHIPE'>Github <i class='fa fa-github'></i></a></li>
         </ul>
+        <a class='navbar-brand' href='http://tessera.io'>
+<img src='figures/icon.png' alt='tessera icon' width='30px' height='30px' style='margin-top: -6px;'>
+Tessera</a>
         <p class="myHeader">RHIPE: R function reference</p>
       </div>
 
@@ -122,11 +126,6 @@
 
       <li class='active'>
          <a target='_self' class='nav-not-header' href='#rhjobinfo'>rhJobInfo</a>
-      </li>
-
-
-      <li class='active'>
-         <a target='_self' class='nav-not-header' href='#rhjoin'>rhjoin</a>
       </li>
 
 
@@ -611,47 +610,6 @@ The parameter <code>job</code> can either be a string with the format <em>job_da
 <h4>Description</h4>
 
 <p>Returns detailed job information across all TaskIDs</p>
-
-</div>
-
-
-<div class='tab-pane' id='rhjoin'>
-<h3>rhjoin</h3>
-
-<p>Wait For A MapReduce Job</p>
-
-<h4>Usage</h4>
-
-<pre><code class="r">rhjoin(job)
-</code></pre>
-
-<h4>Arguments</h4>
-
-<p><strong>job</strong><br>
-The parameter <code>job</code> can either be string with the format <code>job_datetime_id</code> or the value returned
-from <code>rhwatch</code> with the <code>async</code> option set to <code>TRUE</code>.</p>
-
-<p><strong>value</strong><br>
-This function returns the same object as <code>rhwatch</code> i.e a list of the results of the job (<code>TRUE</code> or 
-<code>FALSE</code> indicating success or failure) and a counters returned by the job.</p>
-
-<h4>Description</h4>
-
-<p>This function waits for a MapReduce job to complete before returning.</p>
-
-<h4>Details</h4>
-
-<p>Calling this functions pauses the R console till the MapReduce job indicated by <code>job</code> is over 
-(successfully or not). The parameter <code>job</code> can either be string with the format <code>job_datetime_id</code> 
-or the value returned from <code>rhwatch</code> with the <code>async</code> option set to <code>TRUE</code>.</p>
-
-<h4>Author</h4>
-
-<p>Saptarshi Guha</p>
-
-<h4>See also</h4>
-
-<p><code>rhstatus</code>, <code>rhwatch</code>, <code>rhkill</code>, <code>rhex</code></p>
 
 </div>
 
@@ -1620,7 +1578,7 @@ contain 100,000 values.</p>
 
 <script src="assets/jquery/jquery.js"></script>
 <script type='text/javascript' src='assets/custom/custom.js'></script>
-<script src="assets/bootstrap/js/bootstrap.js"></script>
+<script src="assets/bootstrap/js/bootstrap.min.js"></script>
 <script src="assets/custom/jquery.ba-hashchange.min.js"></script>
 <script src="assets/custom/nav.js"></script>
 
